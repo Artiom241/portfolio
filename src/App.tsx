@@ -217,7 +217,10 @@ function useReveal() {
 function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [chaosActive, setChaosActive] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const chaosButtonRef = useRef<HTMLButtonElement>(null);
+  const qrButtonRef = useRef<HTMLButtonElement>(null);
+  const qrDialogRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useReveal();
@@ -264,6 +267,28 @@ function App() {
     };
   }, [modalOpen]);
 
+  useEffect(() => {
+    if (!qrOpen) return undefined;
+
+    const previousActive = document.activeElement as HTMLElement | null;
+    document.body.classList.add('modal-lock');
+    setTimeout(() => qrDialogRef.current?.querySelector('button')?.focus(), 0);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeQr();
+      }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.classList.remove('modal-lock');
+      document.removeEventListener('keydown', onKeyDown);
+      previousActive?.focus();
+    };
+  }, [qrOpen]);
+
   const triggerChaos = () => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-chaos-part]'));
@@ -305,6 +330,11 @@ function App() {
     setModalOpen(false);
     setChaosActive(false);
     document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const closeQr = () => {
+    setQrOpen(false);
+    window.setTimeout(() => qrButtonRef.current?.focus(), 0);
   };
 
   return (
@@ -349,18 +379,21 @@ function App() {
             <div className="hero__tiles">
               <a
                 className="hero-tile hero-tile--cta reveal"
-                href={links.behanceMain}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Смотреть кейсы на Behance"
+                href="#projects"
+                aria-label="Перейти к блоку кейсов"
               >
-                <span>Смотреть кейсы →</span>
+                <span>Кейсы</span>
               </a>
 
-              <figure className="hero-tile hero-tile--qr reveal">
+              <button
+                className="hero-tile hero-tile--qr reveal"
+                type="button"
+                onClick={() => setQrOpen(true)}
+                aria-label="Увеличить QR-код для сканирования"
+                ref={qrButtonRef}
+              >
                 <img src={`${A}qr-code.png`} alt="QR-код для перехода к кейсам" width="240" height="240" />
-                <figcaption>Сканировать → кейсы</figcaption>
-              </figure>
+              </button>
             </div>
           </div>
 
@@ -424,7 +457,6 @@ function App() {
               </div>
             </article>
           ))}
-          <div className="divider reveal reveal--line" />
         </section>
 
         <section className="cases" id="projects" aria-labelledby="projects-title">
@@ -467,6 +499,24 @@ function App() {
                 Посмотреть кейсы
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {qrOpen && (
+        <div className="qr-shell" role="presentation" onMouseDown={closeQr}>
+          <div
+            className="qr-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="QR-код для сканирования"
+            ref={qrDialogRef}
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button className="qr-dialog__close" type="button" aria-label="Закрыть QR-код" onClick={closeQr}>
+              ×
+            </button>
+            <img src={`${A}qr-code.png`} alt="QR-код для перехода к кейсам" width="600" height="600" />
           </div>
         </div>
       )}

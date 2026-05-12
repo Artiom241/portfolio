@@ -271,7 +271,12 @@ ul {
 }
 
 .hero-tile--qr {
+  padding: 0;
   background: var(--muted);
+  transition:
+    background var(--duration-medium) var(--ease-out),
+    box-shadow var(--duration-medium) var(--ease-out),
+    transform var(--duration-medium) var(--ease-out);
 }
 
 .hero-tile--qr img {
@@ -279,20 +284,27 @@ ul {
   height: 100%;
   object-fit: cover;
   opacity: 0.9;
+  filter: saturate(0) contrast(1.08);
+  transition:
+    filter var(--duration-medium) var(--ease-out),
+    opacity var(--duration-medium) var(--ease-out);
 }
 
-.hero-tile--qr figcaption {
-  position: absolute;
-  right: 16px;
-  bottom: 14px;
-  left: 16px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.72);
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 12px;
-  line-height: 16px;
-  text-align: center;
+.hero-tile--qr:hover,
+.hero-tile--qr:focus-visible {
+  transform: scale(1.03);
+  background: #fff;
+  box-shadow: 0 0 46px rgba(255, 255, 255, 0.22);
+}
+
+.hero-tile--qr:hover img,
+.hero-tile--qr:focus-visible img {
+  opacity: 1;
+  filter: saturate(0) contrast(1.55) brightness(1.16);
+}
+
+.hero-tile--qr:active {
+  transform: scale(0.98);
 }
 
 .hero__copy {
@@ -388,6 +400,11 @@ ul {
   width: 100%;
   height: 1px;
   background: var(--divider);
+}
+
+.skill-row {
+  border-bottom: 1px solid var(--divider);
+  padding-bottom: 32px;
 }
 
 .skill-row__content {
@@ -777,6 +794,62 @@ ul {
   transform: translateY(-2px);
 }
 
+.qr-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  animation: modalFade 180ms var(--ease-out);
+}
+
+.qr-dialog {
+  position: relative;
+  display: grid;
+  width: min(600px, calc(100vw - 32px));
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 40px;
+  background: #fff;
+  box-shadow: 0 24px 100px rgba(0, 0, 0, 0.46);
+  animation: modalEnter 420ms var(--ease-out);
+}
+
+.qr-dialog img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+  filter: saturate(0) contrast(1.55) brightness(1.16);
+}
+
+.qr-dialog__close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  z-index: 1;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  font-size: 28px;
+  line-height: 1;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+
+.qr-dialog__close:hover,
+.qr-dialog__close:focus-visible {
+  transform: scale(1.06);
+}
+
 @keyframes modalFade {
   from {
     opacity: 0;
@@ -1067,6 +1140,18 @@ ul {
 
   .modal {
     padding: 28px;
+  }
+
+  .qr-dialog {
+    border-radius: 28px;
+  }
+
+  .qr-dialog__close {
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    font-size: 24px;
   }
 }
 
