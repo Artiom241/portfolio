@@ -64,7 +64,7 @@ const navItems = [
 const interestMetrics: Metric[] = [
   { label: 'Опыт в продукте', value: '2.5+ года\nB2C и SaaS' },
   { label: 'Платформы', value: 'Web + Mobile' },
-  { label: 'Роль', value: 'Product designer\n(end-to-end)' },
+  { label: 'Роль', value: 'Product\u00A0designer\n(end-to-end)' },
   { label: 'Фокус', value: 'MVP, Growth' },
 ];
 
@@ -359,7 +359,7 @@ function App() {
 
           <button className="language-switcher" type="button" aria-label="Текущий язык: русский">
             <span>Ru</span>
-            <img src={`${A}chevron.svg`} alt="" aria-hidden="true" width="16" height="16" />
+            <Icon name="chevron-down" className="language-switcher__icon" />
           </button>
         </div>
       </header>
@@ -377,11 +377,17 @@ function App() {
             />
 
             <div className="action-grid hero__actions">
-              <ActionTile number="[01 - 03]" label="Проекты" href="#projects" icon="↘" ariaLabel="Перейти к проектам" />
+              <ActionTile
+                number="[01 - 03]"
+                label="Проекты"
+                href="#projects"
+                icon="arrow-down-right"
+                ariaLabel="Перейти к проектам"
+              />
               <ActionTile
                 number="[RU, EN]"
                 label="Резюме"
-                icon="↓"
+                icon="download"
                 onClick={() => setActiveModal('resume')}
                 ariaLabel="Выбрать язык резюме"
                 buttonRef={resumeButtonRef}
@@ -409,7 +415,13 @@ function App() {
           <SectionHeader title="Интересы" titleId="about-title" />
           <div className="section-grid interests__body">
             <div className="rail-action reveal">
-              <ActionTile number="[01 - 05]" label="Навыки" href="#skills" icon="↘" ariaLabel="Перейти к навыкам" />
+              <ActionTile
+                number="[01 - 05]"
+                label="Навыки"
+                href="#skills"
+                icon="arrow-down-right"
+                ariaLabel="Перейти к навыкам"
+              />
             </div>
 
             <div className="interests__content reveal">
@@ -442,7 +454,7 @@ function App() {
           </div>
         </section>
 
-        <section className="section-block cases" id="projects" aria-labelledby="projects-title">
+        <section className="section-block cases" id="projects" aria-labelledby="projects-title" data-motion-scope data-chaos-part>
           <SectionHeader title="Проекты" titleId="projects-title" />
           <div className="cases__list">
             {cases.map((caseStudy) => (
@@ -533,7 +545,7 @@ function SectionHeader({ title, titleId }: { title: string; titleId: string }) {
 type ActionTileProps = {
   number: string;
   label: string;
-  icon: string;
+  icon: IconName;
   href?: string;
   targetBlank?: boolean;
   onClick?: () => void;
@@ -547,7 +559,7 @@ function ActionTile({ number, label, icon, href, targetBlank, onClick, ariaLabel
       <span className="action-tile__number">{number}</span>
       <span className="action-tile__label">{label}</span>
       <span className="action-tile__icon" aria-hidden="true">
-        {icon}
+        <Icon name={icon} />
       </span>
     </>
   );
@@ -621,7 +633,7 @@ function SkillAccordionItem({
           <span className="skill-item__body">
             <span className="skill-item__title">{skill.title}</span>
             <span className="skill-item__icon" aria-hidden="true">
-              {isOpen ? '−' : '+'}
+              <Icon name={isOpen ? 'minus' : 'plus'} />
             </span>
           </span>
         </button>
@@ -642,6 +654,61 @@ function SkillAccordionItem({
       </div>
     </article>
   );
+}
+
+type IconName = 'arrow-down-right' | 'arrow-up-right' | 'chevron-down' | 'download' | 'minus' | 'plus';
+
+function Icon({ name, className = '' }: { name: IconName; className?: string }) {
+  const common = {
+    className: `icon ${className}`.trim(),
+    fill: 'none',
+    focusable: false,
+    'aria-hidden': true,
+  };
+
+  switch (name) {
+    case 'arrow-down-right':
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <path d="M7 7 17 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M17 7v10H7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'arrow-up-right':
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <path d="M7 17 17 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M7 7h10v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'chevron-down':
+      return (
+        <svg {...common} viewBox="0 0 16 16">
+          <path d="m3 5.5 5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'download':
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <path d="M12 4v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="m7 11 5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M5 20h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    case 'minus':
+      return (
+        <svg {...common} viewBox="0 0 36 36">
+          <path d="M10 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    case 'plus':
+      return (
+        <svg {...common} viewBox="0 0 36 36">
+          <path d="M10 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M18 10v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+  }
 }
 
 function ChipList({ chips }: { chips: string[] }) {
@@ -672,7 +739,7 @@ function CaseCard({
           <ActionTile
             number={caseStudy.number}
             label="Behance"
-            icon="↗"
+            icon="arrow-up-right"
             href={caseStudy.href}
             targetBlank
             ariaLabel={`Открыть кейс ${caseStudy.title} на Behance`}

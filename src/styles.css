@@ -16,8 +16,10 @@
   --page-x: 40px;
   --grid-gap: 40px;
   --rail: 520px;
+  --tile-size: 240px;
   --section-gap: 180px;
   --radius-lg: 32px;
+  --metric-label-gap: 8px;
 }
 
 * {
@@ -154,7 +156,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 808px;
+  width: calc(var(--rail) + var(--grid-gap) + var(--tile-size));
   gap: 24px;
 }
 
@@ -200,6 +202,18 @@ ul {
   text-transform: uppercase;
 }
 
+.icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.language-switcher__icon {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+}
+
 .section-grid,
 .skill-item__trigger,
 .skill-item__panel,
@@ -226,11 +240,6 @@ ul {
   scroll-margin-top: 40px;
 }
 
-.skills,
-.cases {
-  gap: 20px;
-}
-
 .section-header {
   align-items: center;
 }
@@ -253,8 +262,8 @@ ul {
 
 .hero__portrait,
 .action-tile {
-  width: 240px;
-  height: 240px;
+  width: var(--tile-size);
+  height: var(--tile-size);
   border-radius: var(--radius-lg);
 }
 
@@ -265,7 +274,7 @@ ul {
 .action-grid,
 .hero__actions {
   display: grid;
-  grid-template-columns: repeat(2, 240px);
+  grid-template-columns: repeat(2, var(--tile-size));
   align-self: flex-start;
   gap: 40px;
 }
@@ -321,9 +330,9 @@ ul {
 
 .action-tile__icon {
   align-self: flex-end;
-  font-size: 28px;
-  font-weight: 400;
-  line-height: 24px;
+  width: 24px;
+  height: 24px;
+  color: #000;
 }
 
 .hero__copy {
@@ -345,7 +354,7 @@ ul {
 .interests__content {
   display: flex;
   flex-direction: column;
-  gap: 60px;
+  gap: 40px;
 }
 
 .lead {
@@ -376,7 +385,7 @@ ul {
 }
 
 .metric dd {
-  margin-top: 8px;
+  margin-top: var(--metric-label-gap);
   color: var(--text);
   font-size: 24px;
   font-weight: 400;
@@ -384,8 +393,9 @@ ul {
   white-space: pre-line;
 }
 
-.metrics--interests .metric dd {
-  margin-top: 16px;
+.metrics--interests {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.15fr) minmax(104px, 0.8fr) minmax(184px, 1fr) minmax(100px, 0.7fr);
 }
 
 .skill-accordion {
@@ -409,6 +419,10 @@ ul {
   text-align: left;
 }
 
+.skill-item--open .skill-item__trigger {
+  padding-bottom: 23px;
+}
+
 .skill-item:not(:first-child) .skill-item__trigger {
   padding-top: 32px;
 }
@@ -419,6 +433,12 @@ ul {
   font-size: 28px;
   font-weight: 400;
   line-height: 36px;
+}
+
+.skill-item:not(.skill-item--open) .skill-item__number,
+.skill-item:not(.skill-item--open) .skill-item__title,
+.skill-item:not(.skill-item--open) .skill-item__icon {
+  color: var(--muted);
 }
 
 .skill-item__body {
@@ -441,13 +461,11 @@ ul {
 
 .skill-item__icon {
   display: inline-grid;
-  flex: 0 0 24px;
-  width: 24px;
+  flex: 0 0 36px;
+  width: 36px;
   height: 36px;
   place-items: center;
   color: var(--text);
-  font-size: 24px;
-  line-height: 24px;
 }
 
 .skill-item__panel {
@@ -940,25 +958,15 @@ ul {
     --page-x: 32px;
     --grid-gap: 32px;
     --rail: 420px;
-  }
-
-  .site-header__content {
-    width: min(760px, 68vw);
+    --tile-size: 216px;
   }
 
   .site-nav {
     gap: 28px;
   }
 
-  .hero__portrait,
-  .action-tile {
-    width: 216px;
-    height: 216px;
-  }
-
   .action-grid,
   .hero__actions {
-    grid-template-columns: repeat(2, 216px);
     gap: 32px;
   }
 
@@ -981,6 +989,7 @@ ul {
   :root {
     --rail: 320px;
     --grid-gap: 28px;
+    --tile-size: 172px;
     --section-gap: 140px;
   }
 
@@ -988,25 +997,13 @@ ul {
     align-items: flex-start;
   }
 
-  .site-header__content {
-    width: auto;
-    flex: 1;
-  }
-
   .site-nav {
     gap: 22px;
     font-size: 14px;
   }
 
-  .hero__portrait,
-  .action-tile {
-    width: 172px;
-    height: 172px;
-  }
-
   .action-grid,
   .hero__actions {
-    grid-template-columns: repeat(2, 172px);
     gap: 28px;
   }
 
@@ -1150,6 +1147,10 @@ ul {
   .metrics,
   .case-card__meta {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metrics--interests {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
