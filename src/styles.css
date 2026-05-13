@@ -330,7 +330,7 @@ ul {
   display: grid;
   grid-template-columns: minmax(0, 800px) minmax(0, var(--rail));
   gap: var(--grid-gap);
-  min-height: 528px;
+  align-items: stretch;
   scroll-margin-top: 24px;
 }
 
@@ -355,10 +355,11 @@ ul {
 
 .hero__media {
   display: flex;
-  min-height: 528px;
+  min-height: 0;
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-between;
+  padding-bottom: 8px;
 }
 
 .hero__portrait,
@@ -706,56 +707,71 @@ ul {
 }
 
 .metric--danger {
-  flex: 0 0 150px;
+  flex: 0 0 155px;
 }
 
 .danger-button {
   position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  width: 142px;
-  min-height: 32px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
+  display: block;
+  width: 155px;
+  height: 32px;
   background: transparent;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  text-transform: uppercase;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+  color: inherit;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
-.danger-button::before {
+.danger-button__body,
+.danger-button__lever {
   position: absolute;
-  z-index: 1;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--danger);
-  content: "";
-  transition: background var(--duration-fast) var(--ease-out);
+  display: block;
+  pointer-events: none;
 }
 
-.danger-button span {
-  position: relative;
-  z-index: 2;
+.danger-button__body {
+  z-index: 1;
+  bottom: 0;
+  left: 0;
+  width: 142px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .danger-button__lever {
+  z-index: 2;
+  left: 0;
+  bottom: 0;
+  width: 155px;
+  height: 78px;
+  overflow: hidden;
+  transform-origin: 142px 62px;
+  will-change: transform;
+  -webkit-mask:
+    radial-gradient(circle 8px at 147px 8px, #000 98%, transparent 100%),
+    linear-gradient(#000 0 0) 139px 8px / 15px 55px no-repeat,
+    linear-gradient(#000 0 0) 132px 59px / 18px 6px no-repeat;
+  mask:
+    radial-gradient(circle 8px at 147px 8px, #000 98%, transparent 100%),
+    linear-gradient(#000 0 0) 139px 8px / 15px 55px no-repeat,
+    linear-gradient(#000 0 0) 132px 59px / 18px 6px no-repeat;
+}
+
+.danger-button__body img,
+.danger-button__lever img {
   position: absolute;
-  z-index: 0;
-  right: -5px;
-  bottom: 0.56px;
-  width: 24px;
+  width: 155px;
   height: 78px;
   max-width: none;
-  pointer-events: none;
-  transform: translate3d(0, -46px, 0) rotate(-4deg);
-  transform-origin: 14px 66px;
-  will-change: transform;
+}
+
+.danger-button__body img {
+  bottom: 0;
+  left: 0;
+}
+
+.danger-button__lever img {
+  top: 0;
+  left: 0;
 }
 
 .danger-button--pulled .danger-button__lever {
@@ -952,8 +968,10 @@ ul {
 .footer__dot {
   width: 4px;
   height: 4px;
+  flex: 0 0 4px;
   border-radius: 50%;
   background: #fff;
+  transform: translateY(1px);
 }
 
 .footer__socials {
@@ -966,34 +984,16 @@ ul {
   height: 66.6667px;
   overflow: hidden;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.92);
   opacity: 1;
   transition:
-    background var(--duration-medium) var(--ease-out),
     box-shadow var(--duration-medium) var(--ease-out),
     transform var(--duration-fast) var(--ease-out);
-}
-
-.footer__socials img {
-  width: 100%;
-  height: 100%;
-  opacity: 0.92;
-  transition:
-    filter var(--duration-medium) var(--ease-out),
-    opacity var(--duration-medium) var(--ease-out);
 }
 
 .footer__socials a:hover,
 .footer__socials a:focus-visible {
   transform: scale(1.03);
-  background: #fff;
   box-shadow: 0 0 46px rgba(255, 255, 255, 0.22);
-}
-
-.footer__socials a:hover img,
-.footer__socials a:focus-visible img {
-  filter: brightness(1.08);
-  opacity: 1;
 }
 
 .footer__socials a:active {
@@ -1149,16 +1149,16 @@ ul {
 
 @keyframes leverPull {
   0% {
-    transform: translate3d(0, -46px, 0) rotate(-4deg);
+    transform: rotate(0deg);
   }
   42% {
-    transform: translate3d(-1px, -10px, 0) rotate(11deg);
+    transform: rotate(62deg);
   }
   68% {
-    transform: translate3d(0, -18px, 0) rotate(5deg);
+    transform: rotate(36deg);
   }
   100% {
-    transform: translate3d(0, -46px, 0) rotate(-4deg);
+    transform: rotate(0deg);
   }
 }
 
@@ -1311,6 +1311,7 @@ ul {
     min-height: auto;
     gap: 28px;
     align-items: flex-start;
+    padding-bottom: 0;
   }
 
   .hero__portrait {

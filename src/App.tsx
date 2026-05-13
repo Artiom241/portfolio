@@ -1275,8 +1275,13 @@ function CaseCard({
                     onClick={handleChaosButtonClick}
                     ref={chaosButtonRef}
                   >
-                    <span>{noDangling(labels.dangerButton)}</span>
-                    <img className="danger-button__lever" src={`${A}machineLever.svg`} alt="" aria-hidden="true" />
+                    <span className="visually-hidden">{noDangling(labels.dangerButton)}</span>
+                    <span className="danger-button__body" aria-hidden="true">
+                      <img src={`${A}special-button.svg`} alt="" />
+                    </span>
+                    <span className="danger-button__lever" aria-hidden="true">
+                      <img src={`${A}special-button.svg`} alt="" />
+                    </span>
                   </button>
                 </dd>
               </div>
