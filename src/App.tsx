@@ -1,9 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+  type ReactNode,
+} from 'react';
 
 const A = `${import.meta.env.BASE_URL}assets/`;
 
 const links = {
-  behanceMain: 'https://www.behance.net/gallery/249094675/Comentee',
   comentee: 'https://www.behance.net/gallery/249094675/Comentee',
   secretSanta:
     'https://www.behance.net/gallery/242551689/Secret-Santa-Mobile-App-for-gift-exchange',
@@ -11,6 +20,8 @@ const links = {
   linkedin: 'https://www.linkedin.com/in/artiom-popov-03512a2a0/?locale=ru_RU',
   email: 'mailto:tredl241@gmail.com',
   telegram: 'https://t.me/Freedom_in',
+  resumeRu: `${A}resume_ru.pdf`,
+  resumeEn: `${A}resume_en.pdf`,
 };
 
 type Metric = {
@@ -19,6 +30,7 @@ type Metric = {
 };
 
 type Skill = {
+  id: string;
   number: string;
   title: string;
   text: string;
@@ -27,12 +39,10 @@ type Skill = {
 
 type CaseStudy = {
   id: string;
+  number: string;
   title: string;
-  eyebrow: string;
-  heading: string;
-  description: string[];
+  description: string;
   href: string;
-  linkLabel: string;
   metrics: Metric[];
   contributions: string[];
   results?: string[];
@@ -42,6 +52,8 @@ type CaseStudy = {
   hasChaosButton?: boolean;
 };
 
+type ModalType = 'resume' | 'chaos' | null;
+
 const navItems = [
   { label: 'Обо мне', href: '#about' },
   { label: 'Навыки', href: '#skills' },
@@ -50,7 +62,7 @@ const navItems = [
 ];
 
 const interestMetrics: Metric[] = [
-  { label: 'Опыт в продукте', value: '2.5+ года в B2C и стартапах' },
+  { label: 'Опыт в продукте', value: '2.5+ года\nB2C и SaaS' },
   { label: 'Платформы', value: 'Web + Mobile' },
   { label: 'Роль', value: 'Product designer\n(end-to-end)' },
   { label: 'Фокус', value: 'MVP, Growth' },
@@ -58,30 +70,35 @@ const interestMetrics: Metric[] = [
 
 const skills: Skill[] = [
   {
+    id: 'logic',
     number: '[01]',
     title: 'Формирую продуктовую логику',
     text: 'Проектирую не экраны, а пользовательские сценарии. Формирую решения через понимание задач пользователя и бизнес-контекста, снижая когнитивную нагрузку и ускоряя достижение цели.',
     chips: ['JTBD', 'User Flows', 'CJM', 'UX Logic', 'Information Architecture'],
   },
   {
+    id: 'product',
     number: '[02]',
     title: 'Комплексное проектирование продукта',
     text: 'Веду дизайн полного цикла: от исследования и гипотез до финальной реализации. Работаю в условиях неопределенности, быстро формирую и валидирую решения.',
     chips: ['Discovery', 'Wireframes', 'Prototyping', 'MVP Design', 'Iteration'],
   },
   {
+    id: 'growth',
     number: '[03]',
     title: 'Показатели роста и эффективности продукта',
     text: 'Работаю с продуктовыми метриками и влияю на них через дизайн. Оптимизирую сценарии, снижаю трение и повышаю конверсию ключевых действий.',
     chips: ['Conversion Rate', 'Activation', 'Funnel Optimization', 'A/B Testing', 'Analytics'],
   },
   {
+    id: 'systems',
     number: '[04]',
     title: 'Дизайн системы и консистентность',
     text: 'Строю системный дизайн: повышаю консистентность интерфейса и ускоряю разработку через дизайн-системы и единые паттерны.',
     chips: ['Design Systems', 'Atomic approach', 'Components', 'Consistency', 'Scalability'],
   },
   {
+    id: 'handoff',
     number: '[05]',
     title: 'Кросс-функциональное взаимодействие',
     text: 'Работаю на стыке дизайна, разработки и продукта. Участвую в принятии решений, защищаю гипотезы и обеспечиваю качественную реализацию.',
@@ -92,20 +109,15 @@ const skills: Skill[] = [
 const cases: CaseStudy[] = [
   {
     id: 'comentee',
-    title: 'Comentee',
-    eyebrow: 'Стартап, B2C',
-    heading: 'Платформа для взаимодействия ментора и менти',
-    description: [
+    number: '[01]',
+    title: 'Comentee — сервис для взаимодействия ментора и менти',
+    description:
       'Перепроектировал продуктовую модель, устранив несоответствие между логикой системы и ожиданиями пользователей. Перевёл интерфейс из role-based в action-based подход, снизив когнитивную нагрузку и упростив вход в сценарии.',
-      'За счет оптимизации первого экрана и сокращения CJM удалось сделать продукт понятнее, минимизировать путаницу с выбором ролей, а так же увеличить процент завершения ключевого флоу.',
-    ],
     href: links.comentee,
-    linkLabel: 'Comentee.ru',
     metrics: [
       { label: 'Год', value: '2025-2026' },
       { label: 'Платформы', value: 'Web' },
       { label: 'Роль', value: 'Product designer' },
-      { label: 'Посмотреть', value: 'Comentee.ru' },
     ],
     contributions: [
       'Провёл анализ пользовательских сценариев и выявил проблему в ролевой модели',
@@ -123,20 +135,15 @@ const cases: CaseStudy[] = [
   },
   {
     id: 'secret-santa',
-    title: 'Secret Santa',
-    eyebrow: 'Стартап, B2C',
-    heading: 'Мобильное приложение для обмена подарками',
-    description: [
-      'Участвовал в создании продукта с нуля — от формирования структуры и пользовательских сценариев до запуска и последующей оптимизации.',
-      'После релиза сфокусировался на снижении трения в onboarding и ключевом сценарии, что позволило существенно повысить конверсию и вовлечённость.',
-    ],
+    number: '[02]',
+    title: 'Secret Santa — мобильное приложение для обмена подарками',
+    description:
+      'Участвовал в создании продукта с нуля — от формирования структуры и пользовательских сценариев до запуска и последующей оптимизации. После релиза сфокусировался на снижении трения в onboarding и ключевом сценарии.',
     href: links.secretSanta,
-    linkLabel: 'App Store',
     metrics: [
       { label: 'Год', value: '2024-2025' },
       { label: 'Платформы', value: 'Web, mobile' },
       { label: 'Роль', value: 'Product designer' },
-      { label: 'Посмотреть', value: 'App Store' },
     ],
     contributions: [
       'Переработал entry point и флоу авторизации',
@@ -154,15 +161,11 @@ const cases: CaseStudy[] = [
   },
   {
     id: 'tommy-hilfiger',
-    title: 'Tommy Hilfiger',
-    eyebrow: 'Ранний проект (точка роста)',
-    heading: 'E-commerce',
-    description: [
-      'Один из моих первых проектов. Редизайн интернет-магазина. В нём я работал с базовыми принципами UX: структурой каталога, карточкой товара и пользовательскими сценариями покупки.',
-      'Сегодня я рассматриваю этот проект как отправную точку. Он помог сформировать понимание интерфейсов и их влияние на поведение пользователей.',
-    ],
+    number: '[03]',
+    title: 'Tommy Hilfiger — интернет магазин',
+    description:
+      'Один из первых проектов — редизайн интернет-магазина. Работал с базовыми принципами UX: структурой каталога, карточкой товара и сценариями покупки. Проект стал отправной точкой в понимании интерфейсов и их влияния на поведение пользователей.',
     href: links.tommy,
-    linkLabel: 'Behance',
     metrics: [
       { label: 'Год', value: '2023' },
       { label: 'Платформы', value: 'Web' },
@@ -214,33 +217,27 @@ function useReveal() {
   }, []);
 }
 
-function App() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [chaosActive, setChaosActive] = useState(false);
-  const [qrOpen, setQrOpen] = useState(false);
-  const chaosButtonRef = useRef<HTMLButtonElement>(null);
-  const qrButtonRef = useRef<HTMLButtonElement>(null);
-  const qrDialogRef = useRef<HTMLDivElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  useReveal();
-
+function useModalA11y<T extends HTMLElement>(
+  isOpen: boolean,
+  dialogRef: RefObject<T | null>,
+  onClose: () => void,
+) {
   useEffect(() => {
-    if (!modalOpen) return undefined;
+    if (!isOpen) return undefined;
 
     const previousActive = document.activeElement as HTMLElement | null;
     const focusableSelector =
       'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
     const focusable = () =>
-      Array.from(modalRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
+      Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
 
     document.body.classList.add('modal-lock');
-    setTimeout(() => focusable()[0]?.focus(), 0);
+    window.setTimeout(() => focusable()[0]?.focus(), 0);
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        closeChaos();
+        onClose();
         return;
       }
 
@@ -265,31 +262,30 @@ function App() {
       document.removeEventListener('keydown', onKeyDown);
       previousActive?.focus();
     };
-  }, [modalOpen]);
+  }, [dialogRef, isOpen, onClose]);
+}
 
-  useEffect(() => {
-    if (!qrOpen) return undefined;
+function App() {
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [chaosActive, setChaosActive] = useState(false);
+  const [openSkillId, setOpenSkillId] = useState(skills[0].id);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const chaosButtonRef = useRef<HTMLButtonElement>(null);
+  const resumeButtonRef = useRef<HTMLButtonElement>(null);
+  const skillButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-    const previousActive = document.activeElement as HTMLElement | null;
-    document.body.classList.add('modal-lock');
-    setTimeout(() => qrDialogRef.current?.querySelector('button')?.focus(), 0);
+  useReveal();
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeQr();
-      }
-    };
+  const closeModal = useCallback(() => {
+    setActiveModal(null);
+    setChaosActive(false);
+  }, []);
 
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.classList.remove('modal-lock');
-      document.removeEventListener('keydown', onKeyDown);
-      previousActive?.focus();
-    };
-  }, [qrOpen]);
+  useModalA11y(Boolean(activeModal), modalRef, closeModal);
 
   const triggerChaos = () => {
+    if (chaosActive || activeModal) return;
+
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-chaos-part]'));
 
@@ -298,7 +294,7 @@ function App() {
       const height = window.innerHeight;
       elements.forEach((element, index) => {
         const rect = element.getBoundingClientRect();
-        const seed = (index + 1) * 9301 + element.textContent!.length * 49297;
+        const seed = (index + 1) * 9301 + (element.textContent?.length ?? 1) * 49297;
         const random = (step: number) => {
           const value = Math.sin(seed + step * 233) * 10000;
           return value - Math.floor(value);
@@ -317,24 +313,28 @@ function App() {
     }
 
     setChaosActive(true);
-    window.setTimeout(() => setModalOpen(true), reduced ? 40 : 760);
+    window.setTimeout(() => setActiveModal('chaos'), reduced ? 40 : 760);
   };
 
-  const closeChaos = () => {
-    setModalOpen(false);
-    setChaosActive(false);
-    window.setTimeout(() => chaosButtonRef.current?.focus(), 0);
+  const openCasesFromChaos = () => {
+    closeModal();
+    window.setTimeout(() => {
+      document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
   };
 
-  const openCasesFromModal = () => {
-    setModalOpen(false);
-    setChaosActive(false);
-    document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  const handleSkillKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    const lastIndex = skills.length - 1;
+    let nextIndex: number | null = null;
 
-  const closeQr = () => {
-    setQrOpen(false);
-    window.setTimeout(() => qrButtonRef.current?.focus(), 0);
+    if (event.key === 'ArrowDown') nextIndex = index === lastIndex ? 0 : index + 1;
+    if (event.key === 'ArrowUp') nextIndex = index === 0 ? lastIndex : index - 1;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = lastIndex;
+
+    if (nextIndex === null) return;
+    event.preventDefault();
+    skillButtonRefs.current[nextIndex]?.focus();
   };
 
   return (
@@ -366,9 +366,9 @@ function App() {
 
       <main className="portfolio__main" id="main">
         <section className="hero" id="top" aria-labelledby="intro-title" data-motion-scope data-chaos-part>
-          <div className="hero__media">
+          <div className="hero__media reveal reveal--media">
             <img
-              className="hero__portrait reveal reveal--media"
+              className="hero__portrait"
               src={`${A}photo-main.jpg`}
               alt="Артем, продуктовый дизайнер"
               width="240"
@@ -376,24 +376,16 @@ function App() {
               fetchPriority="high"
             />
 
-            <div className="hero__tiles">
-              <a
-                className="hero-tile hero-tile--cta reveal"
-                href="#projects"
-                aria-label="Перейти к блоку кейсов"
-              >
-                <span>Кейсы</span>
-              </a>
-
-              <button
-                className="hero-tile hero-tile--qr reveal"
-                type="button"
-                onClick={() => setQrOpen(true)}
-                aria-label="Увеличить QR-код для сканирования"
-                ref={qrButtonRef}
-              >
-                <img src={`${A}qr-code.png`} alt="QR-код для перехода к кейсам" width="240" height="240" />
-              </button>
+            <div className="action-grid hero__actions">
+              <ActionTile number="[01 - 03]" label="Проекты" href="#projects" icon="↘" ariaLabel="Перейти к проектам" />
+              <ActionTile
+                number="[RU, EN]"
+                label="Резюме"
+                icon="↓"
+                onClick={() => setActiveModal('resume')}
+                ariaLabel="Выбрать язык резюме"
+                buttonRef={resumeButtonRef}
+              />
             </div>
           </div>
 
@@ -413,187 +405,316 @@ function App() {
           </div>
         </section>
 
-        <section className="section-grid interests" id="about" aria-labelledby="about-title" data-motion-scope data-chaos-part>
-          <h2 className="section-title reveal" id="about-title">
-            Зона интересов
-          </h2>
+        <section className="section-block interests" id="about" aria-labelledby="about-title" data-motion-scope data-chaos-part>
+          <SectionHeader title="Интересы" titleId="about-title" />
+          <div className="section-grid interests__body">
+            <div className="rail-action reveal">
+              <ActionTile number="[01 - 05]" label="Навыки" href="#skills" icon="↘" ariaLabel="Перейти к навыкам" />
+            </div>
 
-          <div className="interests__content">
-            <p className="lead reveal">
-              Люблю работать в стартапах так как в них можно влиять не только на интерфейс, но и на саму логику
-              продукта: от первых сценариев до запуска и роста.
-            </p>
+            <div className="interests__content reveal">
+              <p className="lead">
+                Люблю работать в стартапах так как в них можно влиять не только на интерфейс, но и на саму логику
+                продукта: от первых сценариев до запуска и роста.
+              </p>
 
-            <dl className="metrics metrics--interests">
-              {interestMetrics.map((metric) => (
-                <div className="metric reveal" key={metric.label}>
-                  <dt>{metric.label}</dt>
-                  <dd>{metric.value}</dd>
-                </div>
-              ))}
-            </dl>
+              <MetricsList metrics={interestMetrics} className="metrics--interests" />
+            </div>
           </div>
         </section>
 
-        <section className="skills" id="skills" aria-labelledby="skills-title" data-motion-scope data-chaos-part>
-          <h2 className="visually-hidden" id="skills-title">
-            Навыки
-          </h2>
-
-          <div className="divider reveal reveal--line" />
-          {skills.map((skill) => (
-            <article className="skill-row reveal" key={skill.number}>
-              <p className="skill-row__number">{skill.number}</p>
-              <div className="skill-row__content">
-                <h3>{skill.title}</h3>
-                <p>{skill.text}</p>
-                <ul className="chip-list" aria-label={`Навыки: ${skill.title}`}>
-                  {skill.chips.map((chip) => (
-                    <li className="chip" key={chip}>
-                      {chip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </article>
-          ))}
+        <section className="section-block skills" id="skills" aria-labelledby="skills-title" data-motion-scope data-chaos-part>
+          <SectionHeader title="Навыки" titleId="skills-title" />
+          <div className="skill-accordion reveal">
+            {skills.map((skill, index) => (
+              <SkillAccordionItem
+                index={index}
+                isOpen={openSkillId === skill.id}
+                key={skill.id}
+                onKeyDown={handleSkillKeyDown}
+                onToggle={() => setOpenSkillId((current) => (current === skill.id ? '' : skill.id))}
+                setButtonRef={(node) => {
+                  skillButtonRefs.current[index] = node;
+                }}
+                skill={skill}
+              />
+            ))}
+          </div>
         </section>
 
-        <section className="cases" id="projects" aria-labelledby="projects-title">
-          <h2 className="visually-hidden" id="projects-title">
-            Проекты
-          </h2>
-          {cases.map((caseStudy) => (
-            <CaseSection
-              caseStudy={caseStudy}
-              key={caseStudy.id}
-              onChaos={triggerChaos}
-              chaosButtonRef={caseStudy.hasChaosButton ? chaosButtonRef : undefined}
-            />
-          ))}
+        <section className="section-block cases" id="projects" aria-labelledby="projects-title">
+          <SectionHeader title="Проекты" titleId="projects-title" />
+          <div className="cases__list">
+            {cases.map((caseStudy) => (
+              <CaseCard caseStudy={caseStudy} key={caseStudy.id} onChaos={triggerChaos} chaosButtonRef={chaosButtonRef} />
+            ))}
+          </div>
         </section>
       </main>
 
       <Footer />
 
-      {modalOpen && (
-        <div className="modal-shell" role="presentation" onMouseDown={closeChaos}>
+      {activeModal === 'resume' && (
+        <ModalShell onClose={closeModal}>
           <div
-            className="modal"
+            className="modal modal--choice"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="ux-modal-title"
+            aria-labelledby="resume-modal-title"
+            aria-describedby="resume-modal-description"
             ref={modalRef}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <h2 id="ux-modal-title">Это тоже UX.</h2>
-            <p>
-              Ты только что взаимодействовал с системой, которая нарушает правила. И всё равно понял, что происходит. Я
-              проектирую такие вещи осознанно.
-            </p>
-            <div className="modal__actions">
-              <button type="button" onClick={closeChaos}>
-                Вернуть интерфейс
-              </button>
-              <button type="button" className="modal__primary" onClick={openCasesFromModal}>
-                Посмотреть кейсы
-              </button>
+            <div className="modal__content">
+              <div className="modal__copy">
+                <h2 id="resume-modal-title">Выберите нужный язык</h2>
+                <p id="resume-modal-description">
+                  Хорошего вам дня и настроения. Это все. А еще улыбнитесь.
+                  <br />
+                  О, и не забудьте выбрать язык.
+                </p>
+              </div>
+              <div className="modal__actions">
+                <a className="modal__button" href={links.resumeRu} download="Artiom_Popov_CV_RU.pdf" onClick={closeModal}>
+                  RU
+                </a>
+                <a className="modal__button" href={links.resumeEn} download="Artiom_Popov_CV_EN.pdf" onClick={closeModal}>
+                  EN
+                </a>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalShell>
       )}
 
-      {qrOpen && (
-        <div className="qr-shell" role="presentation" onMouseDown={closeQr}>
+      {activeModal === 'chaos' && (
+        <ModalShell onClose={closeModal}>
           <div
-            className="qr-dialog"
+            className="modal modal--choice"
             role="dialog"
             aria-modal="true"
-            aria-label="QR-код для сканирования"
-            ref={qrDialogRef}
+            aria-labelledby="ux-modal-title"
+            aria-describedby="ux-modal-description"
+            ref={modalRef}
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <button className="qr-dialog__close" type="button" aria-label="Закрыть QR-код" onClick={closeQr}>
-              ×
-            </button>
-            <img src={`${A}qr-code.png`} alt="QR-код для перехода к кейсам" width="600" height="600" />
+            <div className="modal__content">
+              <div className="modal__copy">
+                <h2 id="ux-modal-title">Поздравляю, вы только что сломали интерфейс!</h2>
+                <p id="ux-modal-description">
+                  Не волнуйтесь, серьезно, любой интерфейс можно сломать. Хороший же интерфейс легко собрать обратно.
+                </p>
+              </div>
+              <div className="modal__actions">
+                <button className="modal__button" type="button" onClick={closeModal}>
+                  Собрать обратно
+                </button>
+                <button className="modal__button" type="button" onClick={openCasesFromChaos}>
+                  Посмотреть кейсы
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        </ModalShell>
       )}
     </div>
   );
 }
 
-function CaseSection({
+function SectionHeader({ title, titleId }: { title: string; titleId: string }) {
+  return (
+    <div className="section-header section-grid reveal">
+      <div aria-hidden="true" />
+      <h2 id={titleId}>{title}</h2>
+    </div>
+  );
+}
+
+type ActionTileProps = {
+  number: string;
+  label: string;
+  icon: string;
+  href?: string;
+  targetBlank?: boolean;
+  onClick?: () => void;
+  ariaLabel: string;
+  buttonRef?: RefObject<HTMLButtonElement | null>;
+};
+
+function ActionTile({ number, label, icon, href, targetBlank, onClick, ariaLabel, buttonRef }: ActionTileProps) {
+  const content = (
+    <>
+      <span className="action-tile__number">{number}</span>
+      <span className="action-tile__label">{label}</span>
+      <span className="action-tile__icon" aria-hidden="true">
+        {icon}
+      </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a
+        className="action-tile"
+        href={href}
+        target={targetBlank ? '_blank' : undefined}
+        rel={targetBlank ? 'noopener noreferrer' : undefined}
+        aria-label={ariaLabel}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button className="action-tile" type="button" onClick={onClick} aria-label={ariaLabel} ref={buttonRef}>
+      {content}
+    </button>
+  );
+}
+
+function MetricsList({ metrics, className = '' }: { metrics: Metric[]; className?: string }) {
+  return (
+    <dl className={`metrics ${className}`}>
+      {metrics.map((metric) => (
+        <div className="metric" key={metric.label}>
+          <dt>{metric.label}</dt>
+          <dd>{metric.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function SkillAccordionItem({
+  index,
+  isOpen,
+  onKeyDown,
+  onToggle,
+  setButtonRef,
+  skill,
+}: {
+  index: number;
+  isOpen: boolean;
+  onKeyDown: (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => void;
+  onToggle: () => void;
+  setButtonRef: (node: HTMLButtonElement | null) => void;
+  skill: Skill;
+}) {
+  const triggerId = `skill-trigger-${skill.id}`;
+  const panelId = `skill-panel-${skill.id}`;
+
+  return (
+    <article className={`skill-item ${isOpen ? 'skill-item--open' : ''}`}>
+      <h3 className="skill-item__heading">
+        <button
+          aria-controls={panelId}
+          aria-expanded={isOpen}
+          className="skill-item__trigger"
+          id={triggerId}
+          onClick={onToggle}
+          onKeyDown={(event) => onKeyDown(event, index)}
+          ref={setButtonRef}
+          type="button"
+        >
+          <span className="skill-item__number">{skill.number}</span>
+          <span className="skill-item__body">
+            <span className="skill-item__title">{skill.title}</span>
+            <span className="skill-item__icon" aria-hidden="true">
+              {isOpen ? '−' : '+'}
+            </span>
+          </span>
+        </button>
+      </h3>
+
+      <div
+        aria-labelledby={triggerId}
+        className="skill-item__panel"
+        hidden={!isOpen}
+        id={panelId}
+        role="region"
+      >
+        <div aria-hidden="true" />
+        <div className="skill-item__content">
+          <p>{skill.text}</p>
+          <ChipList chips={skill.chips} />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function ChipList({ chips }: { chips: string[] }) {
+  return (
+    <ul className="chip-list">
+      {chips.map((chip) => (
+        <li className="chip" key={chip}>
+          {chip}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function CaseCard({
   caseStudy,
-  onChaos,
   chaosButtonRef,
+  onChaos,
 }: {
   caseStudy: CaseStudy;
+  chaosButtonRef: RefObject<HTMLButtonElement | null>;
   onChaos: () => void;
-  chaosButtonRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
   return (
-    <article className="case" id={caseStudy.id} data-motion-scope data-chaos-part>
-      <div className="case__heading section-grid">
-        <div className="case__label reveal">
-          <h3>{caseStudy.title}</h3>
-          <p>{caseStudy.eyebrow}</p>
+    <article className="case-card" id={caseStudy.id} data-motion-scope data-chaos-part>
+      <div className="case-card__heading section-grid reveal">
+        <div className="rail-action">
+          <ActionTile
+            number={caseStudy.number}
+            label="Behance"
+            icon="↗"
+            href={caseStudy.href}
+            targetBlank
+            ariaLabel={`Открыть кейс ${caseStudy.title} на Behance`}
+          />
         </div>
 
-        <div className="case__text reveal">
-          <h4>{caseStudy.heading}</h4>
-          {caseStudy.description.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+        <div className="case-card__summary">
+          <div className="case-card__copy">
+            <h3>{caseStudy.title}</h3>
+            <p>{caseStudy.description}</p>
+          </div>
 
-          <dl className="metrics case__metrics">
-            {caseStudy.metrics.map((metric) => (
-              <div className="metric" key={metric.label}>
-                <dt>{metric.label}</dt>
-                <dd>
-                  {metric.label === 'Посмотреть' ? (
-                    <a href={caseStudy.href} target="_blank" rel="noopener noreferrer">
-                      {metric.value}
-                      <img src={`${A}arrow.svg`} alt="" aria-hidden="true" width="22" height="22" />
-                    </a>
-                  ) : (
-                    metric.value
-                  )}
-                </dd>
-              </div>
-            ))}
-
+          <div className="case-card__meta">
+            <MetricsList metrics={caseStudy.metrics} />
             {caseStudy.hasChaosButton && (
               <div className="metric metric--danger">
-                <dt>Не нажимать</dt>
+                <dt>Пасхалка</dt>
                 <dd>
                   <button className="danger-button" type="button" onClick={onChaos} ref={chaosButtonRef}>
-                    <span>Не надо</span>
+                    <span>Не нажимать</span>
                   </button>
                 </dd>
               </div>
             )}
-          </dl>
+          </div>
         </div>
       </div>
 
-      <div className="case__content section-grid">
-        <div className="impact-list reveal">
+      <div className="case-card__content section-grid reveal">
+        <div className="impact-list">
           <ImpactCard title={caseStudy.hasChaosButton ? 'Выводы и рост' : 'Достижения и вклад'} items={caseStudy.contributions} />
           {caseStudy.results && <ImpactCard title="Результаты" items={caseStudy.results} />}
         </div>
 
-        <a
-          className={`case-cover reveal reveal--media ${caseStudy.compactImage ? 'case-cover--compact' : ''}`}
-          href={caseStudy.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={`Открыть кейс ${caseStudy.title} на Behance`}
-        >
-          <img src={caseStudy.image} alt={caseStudy.imageAlt} loading="lazy" width="800" height={caseStudy.compactImage ? 435 : 486} />
-          <span>Open on Behance →</span>
-        </a>
+        <BeforeAfterSlider
+          afterAlt={`${caseStudy.imageAlt}: версия после`}
+          afterSrc={caseStudy.image}
+          beforeAlt={`${caseStudy.imageAlt}: версия до`}
+          beforeSrc={caseStudy.image}
+          compact={caseStudy.compactImage}
+          label={`Сравнение до и после: ${caseStudy.title}`}
+        />
       </div>
     </article>
   );
@@ -609,6 +730,150 @@ function ImpactCard({ title, items }: { title: string; items: string[] }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+function BeforeAfterSlider({
+  afterAlt,
+  afterSrc,
+  beforeAlt,
+  beforeSrc,
+  compact,
+  label,
+}: {
+  afterAlt: string;
+  afterSrc: string;
+  beforeAlt: string;
+  beforeSrc: string;
+  compact?: boolean;
+  label: string;
+}) {
+  const [value, setValue] = useState(50);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const pendingClientXRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  const clamp = (next: number) => Math.min(100, Math.max(0, next));
+
+  const updateFromPending = useCallback(() => {
+    rafRef.current = null;
+    const track = trackRef.current;
+    const clientX = pendingClientXRef.current;
+    if (!track || clientX === null) return;
+
+    const rect = track.getBoundingClientRect();
+    const next = clamp(((clientX - rect.left) / rect.width) * 100);
+    setValue(next);
+  }, []);
+
+  const queueUpdate = useCallback(
+    (clientX: number) => {
+      pendingClientXRef.current = clientX;
+      if (rafRef.current === null) {
+        rafRef.current = window.requestAnimationFrame(updateFromPending);
+      }
+    },
+    [updateFromPending],
+  );
+
+  useEffect(() => {
+    const onPointerMove = (event: PointerEvent) => {
+      if (!draggingRef.current) return;
+      event.preventDefault();
+      queueUpdate(event.clientX);
+    };
+
+    const stopDrag = () => {
+      draggingRef.current = false;
+      document.body.classList.remove('is-slider-dragging');
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: false });
+    window.addEventListener('pointerup', stopDrag);
+    window.addEventListener('pointercancel', stopDrag);
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', stopDrag);
+      window.removeEventListener('pointercancel', stopDrag);
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+      document.body.classList.remove('is-slider-dragging');
+    };
+  }, [queueUpdate]);
+
+  const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    draggingRef.current = true;
+    document.body.classList.add('is-slider-dragging');
+    queueUpdate(event.clientX);
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    const keySteps: Record<string, number> = {
+      ArrowLeft: -1,
+      ArrowDown: -1,
+      ArrowRight: 1,
+      ArrowUp: 1,
+      PageDown: -10,
+      PageUp: 10,
+    };
+
+    if (event.key === 'Home') {
+      event.preventDefault();
+      setValue(0);
+      return;
+    }
+
+    if (event.key === 'End') {
+      event.preventDefault();
+      setValue(100);
+      return;
+    }
+
+    const step = keySteps[event.key];
+    if (!step) return;
+    event.preventDefault();
+    setValue((current) => clamp(current + step));
+  };
+
+  const sliderStyle = { '--slider-value': `${value}%` } as CSSProperties;
+
+  return (
+    <div
+      className={`case-slider case-card--slider ${compact ? 'case-slider--compact' : ''}`}
+      onPointerDown={startDrag}
+      ref={trackRef}
+      style={sliderStyle}
+    >
+      <img className="case-slider__image case-slider__image--before" src={beforeSrc} alt={beforeAlt} loading="lazy" />
+      <div className="case-slider__overlay" aria-hidden="true">
+        <img className="case-slider__image" src={afterSrc} alt="" loading="lazy" />
+      </div>
+      <button
+        aria-label={label}
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={Math.round(value)}
+        aria-valuetext={`${Math.round(value)}% после`}
+        className="case-slider__handle"
+        onKeyDown={handleKeyDown}
+        role="slider"
+        type="button"
+      >
+        <span className="visually-hidden">{label}</span>
+      </button>
+    </div>
+  );
+}
+
+function ModalShell({ children, onClose }: { children: ReactNode; onClose: () => void }) {
+  return (
+    <div className="modal-shell" role="presentation" onMouseDown={onClose}>
+      {children}
+    </div>
   );
 }
 
@@ -633,7 +898,13 @@ function Footer() {
         <div className="footer__right">
           <nav className="footer__links" aria-label="Кейсы в Behance">
             {footerLinks.map((link) => (
-              <a href={link.href} target="_blank" rel="noopener noreferrer" key={link.name}>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                key={link.name}
+                aria-label={`Открыть кейс ${link.name} на Behance`}
+              >
                 <span>{link.type}</span>
                 <span className="footer__dot" aria-hidden="true" />
                 <span>{link.name}</span>
