@@ -14,8 +14,10 @@ const A = `${import.meta.env.BASE_URL}assets/`;
 
 const links = {
   comentee: 'https://www.behance.net/gallery/249094675/Comentee',
+  comenteeLanding: 'https://comentee.ru/landing',
   secretSanta:
     'https://www.behance.net/gallery/242551689/Secret-Santa-Mobile-App-for-gift-exchange',
+  secretSantaAppStore: 'https://apps.apple.com/vn/app/surprise-santa-gift-exchange/id1185304926',
   tommy: 'https://www.behance.net/gallery/168742491/TOMMY-HILFIGER-E-commerce-redesign',
   linkedin: 'https://www.linkedin.com/in/artiom-popov-03512a2a0/?locale=ru_RU',
   email: 'mailto:tredl241@gmail.com',
@@ -28,6 +30,13 @@ type Metric = {
   label: string;
   value: string;
   icon?: IconName;
+  href?: string;
+  ariaLabel?: string;
+};
+
+type NavItem = {
+  label: string;
+  href: string;
 };
 
 type Skill = {
@@ -47,6 +56,8 @@ type CaseStudy = {
   metrics: Metric[];
   contributions: string[];
   results?: string[];
+  contributionsTitle?: string;
+  resultsTitle?: string;
   image: string;
   imageAlt: string;
   compactImage?: boolean;
@@ -54,8 +65,74 @@ type CaseStudy = {
 };
 
 type ModalType = 'resume' | 'chaos' | null;
+type Language = 'ru' | 'en';
 
-const navItems = [
+type PortfolioContent = {
+  navItems: NavItem[];
+  interestMetrics: Metric[];
+  skills: Skill[];
+  cases: CaseStudy[];
+  hero: {
+    title: string;
+    portraitAlt: string;
+    paragraphs: string[];
+  };
+  sections: {
+    interests: string;
+    skills: string;
+    projects: string;
+  };
+  tiles: {
+    projects: string;
+    projectsNumber: string;
+    projectsAria: string;
+    resume: string;
+    resumeNumber: string;
+    resumeAria: string;
+    skills: string;
+    skillsNumber: string;
+    skillsAria: string;
+  };
+  modal: {
+    resumeTitle: string;
+    resumeDescription: string[];
+    chaosTitle: string;
+    chaosDescription: string;
+    chaosReset: string;
+    chaosCases: string;
+  };
+  caseLabels: {
+    behance: string;
+    openBehance: (title: string) => string;
+    danger: string;
+    dangerButton: string;
+    contributions: string;
+    insights: string;
+    results: string;
+    slider: (title: string) => string;
+    afterPercent: (value: number) => string;
+  };
+  footer: {
+    copyright: string;
+    casesNav: string;
+    openCase: (name: string) => string;
+    email: string;
+    telegram: string;
+    linkedin: string;
+  };
+  language: {
+    current: (label: string) => string;
+    menu: string;
+  };
+  skipLink: string;
+};
+
+const languageOptions: Array<{ code: Language; label: string; name: string }> = [
+  { code: 'ru', label: 'RU', name: 'Русский' },
+  { code: 'en', label: 'EN', name: 'English' },
+];
+
+const navItems: NavItem[] = [
   { label: 'Обо мне', href: '#about' },
   { label: 'Навыки', href: '#skills' },
   { label: 'Проекты', href: '#projects' },
@@ -65,7 +142,7 @@ const navItems = [
 const interestMetrics: Metric[] = [
   { label: 'Опыт в продукте', value: '2.5+ года\nB2C и SaaS' },
   { label: 'Платформы', value: 'Web +\nMobile' },
-  { label: 'Роль', value: 'Product\u00A0designer\n(end-to-end)' },
+  { label: 'Роль', value: 'Product\u00A0designer\n(End-to-end)' },
   { label: 'Фокус', value: 'MVP, Growth' },
 ];
 
@@ -119,7 +196,13 @@ const cases: CaseStudy[] = [
       { label: 'Год', value: '2025-2026' },
       { label: 'Платформы', value: 'Web' },
       { label: 'Роль', value: 'Product designer' },
-      { label: 'Посмотреть', value: 'Comentee.ru', icon: 'arrow-right' },
+      {
+        label: 'Посмотреть',
+        value: 'Comentee.ru',
+        icon: 'arrow-right',
+        href: links.comenteeLanding,
+        ariaLabel: 'Открыть сайт Comentee',
+      },
     ],
     contributions: [
       'Провёл анализ пользовательских сценариев и выявил проблему в ролевой модели',
@@ -146,7 +229,13 @@ const cases: CaseStudy[] = [
       { label: 'Год', value: '2024-2025' },
       { label: 'Платформы', value: 'Web, mobile' },
       { label: 'Роль', value: 'Product designer' },
-      { label: 'Посмотреть', value: 'App Store', icon: 'arrow-right' },
+      {
+        label: 'Посмотреть',
+        value: 'App Store',
+        icon: 'arrow-right',
+        href: links.secretSantaAppStore,
+        ariaLabel: 'Открыть Secret Santa в App Store',
+      },
     ],
     contributions: [
       'Переработал entry point и флоу авторизации',
@@ -187,6 +276,276 @@ const cases: CaseStudy[] = [
   },
 ];
 
+const content: Record<Language, PortfolioContent> = {
+  ru: {
+    navItems,
+    interestMetrics,
+    skills,
+    cases,
+    hero: {
+      title: 'Артем, продуктовый дизайнер',
+      portraitAlt: 'Артем, продуктовый дизайнер',
+      paragraphs: [
+        'Привет! Я Артем, продуктовый дизайнер с опытом в B2C и SaaS.',
+        'Проектирую пользовательские сценарии и помогаю продуктам развиваться — от запуска MVP до последующих этапов роста, работая на стыке пользовательского опыта и бизнес-задач.',
+        'Фокусируюсь на моментах, где пользователь теряется, и превращаю сложную логику в понятные действия, опираясь на пользовательские сигналы, поведение и продуктовые метрики.',
+      ],
+    },
+    sections: {
+      interests: 'Интересы',
+      skills: 'Навыки',
+      projects: 'Проекты',
+    },
+    tiles: {
+      projects: 'Проекты',
+      projectsNumber: '[01 - 03]',
+      projectsAria: 'Перейти к проектам',
+      resume: 'Резюме',
+      resumeNumber: '[RU, EN]',
+      resumeAria: 'Выбрать язык резюме',
+      skills: 'Навыки',
+      skillsNumber: '[01 - 05]',
+      skillsAria: 'Перейти к навыкам',
+    },
+    modal: {
+      resumeTitle: 'Выберите нужный язык',
+      resumeDescription: ['Хорошего вам дня и настроения. Это все. А еще улыбнитесь.', 'О, и не забудьте выбрать язык.'],
+      chaosTitle: 'Поздравляю, вы только что сломали интерфейс!',
+      chaosDescription: 'Не волнуйтесь, серьезно, любой интерфейс можно сломать. Хороший же интерфейс легко собрать обратно.',
+      chaosReset: 'Собрать обратно',
+      chaosCases: 'Посмотреть кейсы',
+    },
+    caseLabels: {
+      behance: 'Behance',
+      openBehance: (title) => `Открыть кейс ${title} на Behance`,
+      danger: 'Пасхалка',
+      dangerButton: 'Не нажимать',
+      contributions: 'Достижения и вклад',
+      insights: 'Выводы и рост',
+      results: 'Результаты',
+      slider: (title) => `Сравнение до и после: ${title}`,
+      afterPercent: (value) => `${value}% после`,
+    },
+    footer: {
+      copyright: '© 2026',
+      casesNav: 'Кейсы в Behance',
+      openCase: (name) => `Открыть кейс ${name} на Behance`,
+      email: 'Написать на email',
+      telegram: 'Открыть Telegram',
+      linkedin: 'Открыть LinkedIn',
+    },
+    language: {
+      current: (label) => `Текущий язык: ${label}`,
+      menu: 'Выбор языка',
+    },
+    skipLink: 'Перейти к основному содержанию',
+  },
+  en: {
+    navItems: [
+      { label: 'About Me', href: '#about' },
+      { label: 'Skills', href: '#skills' },
+      { label: 'Projects', href: '#projects' },
+      { label: 'Contacts', href: '#contacts' },
+    ],
+    interestMetrics: [
+      { label: 'Product Experience', value: '2.5+ years in\u00A0B2C\u00A0& SaaS' },
+      { label: 'Platforms', value: 'Web + Mobile' },
+      { label: 'Role', value: 'Product\u00A0designer\n(End-to-end)' },
+      { label: 'Focus', value: 'MVP, Growth' },
+    ],
+    skills: [
+      {
+        id: 'logic',
+        number: '[01]',
+        title: 'I shape product logic',
+        text: 'I design not screens, but user scenarios. I create solutions through understanding user tasks and\u00A0business context, reducing cognitive load and accelerating goal achievement.',
+        chips: ['JTBD', 'User Flows', 'CJM', 'UX Logic', 'Information Architecture'],
+      },
+      {
+        id: 'product',
+        number: '[02]',
+        title: 'Comprehensive product design',
+        text: 'I lead the full-cycle design: from research and hypotheses to final implementation. I work in conditions of uncertainty, quickly forming and validating solutions.',
+        chips: ['Discovery', 'Wireframes', 'Prototyping', 'MVP Design', 'Iteration'],
+      },
+      {
+        id: 'growth',
+        number: '[03]',
+        title: 'Growth and product effectiveness metrics',
+        text: 'I work with product metrics and influence them through design. I optimize scenarios, reduce friction, and increase conversion of key actions.',
+        chips: ['Conversion Rate', 'Activation', 'Funnel Optimization', 'A/B Testing', 'Analytics'],
+      },
+      {
+        id: 'systems',
+        number: '[04]',
+        title: 'Design system and consistency',
+        text: 'I build systematic design: enhancing interface consistency and accelerating development through design systems and unified patterns.',
+        chips: ['Design Systems', 'Atomic approach', 'Components', 'Consistency', 'Scalability'],
+      },
+      {
+        id: 'handoff',
+        number: '[05]',
+        title: 'Cross-functional collaboration',
+        text: 'I work at the intersection of design, development, and product. I participate in decision-making, defend hypotheses, and ensure quality implementation.',
+        chips: ['Design Review', 'Stakeholder Communication', 'Handoff', 'Product Discussions'],
+      },
+    ],
+    cases: [
+      {
+        id: 'comentee',
+        number: '[01]',
+        title: 'Comentee - service for mentor and mentee interaction',
+        description:
+          'Redesigned the product model, bridging the gap between system logic and user expectations. Transitioned from a role-based to an action-based approach, reducing cognitive load and\u00A0simplifying entry into scenarios. Optimized the first screen and shortened the CJM, enhancing the product\'s "understandability" and increasing the completion of key flows.',
+        href: links.comentee,
+        metrics: [
+          { label: 'Year', value: '2025-2026' },
+          { label: 'Platforms', value: 'Web' },
+          { label: 'Role', value: 'Product designer' },
+          {
+            label: 'View',
+            value: 'Comentee.ru',
+            icon: 'arrow-right',
+            href: links.comenteeLanding,
+            ariaLabel: 'Open Comentee website',
+          },
+        ],
+        contributions: [
+          'Conducted an analysis of user scenarios and identified an issue in the role model.',
+          'Formulated a hypothesis for transitioning from role-based to action-based logic.',
+          'Redesigned the main screen structure and navigation.',
+          'Simplified the scenarios for creating requests and\u00A0responses.',
+        ],
+        results: [
+          'Eliminated confusion regarding roles and entry points.',
+          'Reduced the cognitive entry threshold for the product.',
+          'Prepared the product for scaling.',
+        ],
+        contributionsTitle: 'Achievements and Contributions',
+        resultsTitle: 'Results',
+        image: `${A}case-comentee.jpg`,
+        imageAlt: 'Comentee case cover: web app interface',
+      },
+      {
+        id: 'secret-santa',
+        number: '[02]',
+        title: 'Secret Santa - mobile app for gift exchange',
+        description:
+          'Participated in creating the product from scratch — from structure and user scenarios to launch and optimization. After the release, reduced friction in onboarding and key scenarios, increasing conversion and engagement.',
+        href: links.secretSanta,
+        metrics: [
+          { label: 'Year', value: '2024-2025' },
+          { label: 'Platforms', value: 'Web, mobile' },
+          { label: 'Role', value: 'Product designer' },
+          {
+            label: 'View',
+            value: 'App Store',
+            icon: 'arrow-right',
+            href: links.secretSantaAppStore,
+            ariaLabel: 'Open Secret Santa in the App Store',
+          },
+        ],
+        contributions: [
+          'Redesigned the entry point and authorization flow',
+          'Simplified the main game creation flow',
+          'Rebuilt the role model',
+          'Prepared email designs and ASO screenshots',
+        ],
+        results: [
+          'Reduced drop-off during authorization (~45% to 25%)',
+          'Increased CR of the key scenario (55% to 85%)',
+          'The product has been scaled to 25 languages',
+        ],
+        contributionsTitle: 'Achievements and contributions',
+        resultsTitle: 'Results',
+        image: `${A}case-secret-santa.jpg`,
+        imageAlt: 'Secret Santa case cover: mobile gift exchange app',
+      },
+      {
+        id: 'tommy-hilfiger',
+        number: '[03]',
+        title: 'Tommy Hilfiger - online store',
+        description:
+          'One of the first projects was the redesign of an online store. I worked with the basic principles of\u00A0UX: catalog structure, product card, and purchasing scenarios. The project became a starting point in understanding interfaces and their impact on user behavior.',
+        href: links.tommy,
+        metrics: [
+          { label: 'Year', value: '2023' },
+          { label: 'Platforms', value: 'Web' },
+          { label: 'Role', value: 'UX/UI designer' },
+        ],
+        contributions: [
+          'It is important to design not screens, but user scenarios.',
+          'The catalog structure affects the speed of decision-making.',
+          'The simplicity of the interface directly impacts conversion.',
+          'The user should not have to "think" to make a purchase.',
+        ],
+        contributionsTitle: 'Insights and growth',
+        image: `${A}case-tommy.jpg`,
+        imageAlt: 'Tommy Hilfiger case cover: e-commerce redesign',
+        compactImage: true,
+        hasChaosButton: true,
+      },
+    ],
+    hero: {
+      title: 'Artiom, product designer',
+      portraitAlt: 'Artiom, product designer',
+      paragraphs: [
+        'Hi, I’m Artem, a product designer with\u00A0experience in both B2C and SaaS products.',
+        'I design user journeys and flows, helping products evolve — from MVP launch through later stages of growth, working at the intersection of user experience, product logic, and business goals.',
+        'I focus on moments where users get lost or drop off, translating complex systems into clear and actionable interactions, guided by user signals, behavior, and\u00A0product metrics.',
+      ],
+    },
+    sections: {
+      interests: 'Interests',
+      skills: 'Skills',
+      projects: 'Projects',
+    },
+    tiles: {
+      projects: 'Projects',
+      projectsNumber: '[01 - 03]',
+      projectsAria: 'Go to projects',
+      resume: 'Resume',
+      resumeNumber: '[EN, RU]',
+      resumeAria: 'Choose resume language',
+      skills: 'Skills',
+      skillsNumber: '[01 - 05]',
+      skillsAria: 'Go to skills',
+    },
+    modal: {
+      resumeTitle: 'Choose a language',
+      resumeDescription: ['Have a nice day and a good mood. That is all. Also, smile.', 'Oh, and do not forget to choose a language.'],
+      chaosTitle: 'Congratulations, you just broke the interface!',
+      chaosDescription: 'Do not worry, really, any interface can be broken. A good interface is easy to put back together.',
+      chaosReset: 'Put it back',
+      chaosCases: 'View cases',
+    },
+    caseLabels: {
+      behance: 'Behance',
+      openBehance: (title) => `Open ${title} on Behance`,
+      danger: 'Easter egg',
+      dangerButton: 'Do not click',
+      contributions: 'Achievements and contributions',
+      insights: 'Insights and growth',
+      results: 'Results',
+      slider: (title) => `Before and after comparison: ${title}`,
+      afterPercent: (value) => `${value}% after`,
+    },
+    footer: {
+      copyright: '© 2026',
+      casesNav: 'Cases on Behance',
+      openCase: (name) => `Open ${name} case on Behance`,
+      email: 'Send an email',
+      telegram: 'Open Telegram',
+      linkedin: 'Open LinkedIn',
+    },
+    language: {
+      current: (label) => `Current language: ${label}`,
+      menu: 'Language selection',
+    },
+    skipLink: 'Skip to main content',
+  },
+};
+
 const shortWords =
   'а|без|бы|в|во|для|до|же|за|и|из|к|ко|ли|между|на|над|не|ни|но|о|об|обо|от|перед|по|под|после|при|с|со|у|через';
 const danglingWordPattern = new RegExp(`(^|[\\s([{«„"—-])(${shortWords})[ \\t]+`, 'giu');
@@ -201,6 +560,10 @@ function noDangling(text: string) {
   }
 
   return result;
+}
+
+function isLanguage(value: string | null): value is Language {
+  return value === 'ru' || value === 'en';
 }
 
 function useReveal() {
@@ -287,13 +650,48 @@ function useModalA11y<T extends HTMLElement>(
 function App() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [chaosActive, setChaosActive] = useState(false);
-  const [openSkillId, setOpenSkillId] = useState(skills[0].id);
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'ru';
+    const savedLanguage = window.localStorage.getItem('portfolio-language');
+    return isLanguage(savedLanguage) ? savedLanguage : 'ru';
+  });
+  const [isLanguageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const [openSkillId, setOpenSkillId] = useState('logic');
   const modalRef = useRef<HTMLDivElement>(null);
+  const languageControlRef = useRef<HTMLDivElement>(null);
   const chaosButtonRef = useRef<HTMLButtonElement>(null);
   const resumeButtonRef = useRef<HTMLButtonElement>(null);
   const skillButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const copy = content[language];
 
   useReveal();
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    window.localStorage.setItem('portfolio-language', language);
+  }, [language]);
+
+  useEffect(() => {
+    if (!isLanguageMenuOpen) return undefined;
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (languageControlRef.current?.contains(event.target as Node)) return;
+      setLanguageMenuOpen(false);
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setLanguageMenuOpen(false);
+    };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isLanguageMenuOpen]);
 
   const closeModal = useCallback(() => {
     setActiveModal(null);
@@ -343,7 +741,7 @@ function App() {
   };
 
   const handleSkillKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
-    const lastIndex = skills.length - 1;
+    const lastIndex = copy.skills.length - 1;
     let nextIndex: number | null = null;
 
     if (event.key === 'ArrowDown') nextIndex = index === lastIndex ? 0 : index + 1;
@@ -359,7 +757,7 @@ function App() {
   return (
     <div className={`portfolio ${chaosActive ? 'portfolio--chaos' : ''}`}>
       <a className="skip-link" href="#main">
-        {noDangling('Перейти к основному содержанию')}
+        {noDangling(copy.skipLink)}
       </a>
 
       <header className="site-header" role="banner" data-chaos-part>
@@ -369,17 +767,53 @@ function App() {
 
         <div className="site-header__content">
           <nav className="site-nav" aria-label="Основная навигация">
-            {navItems.map((item) => (
+            {copy.navItems.map((item) => (
               <a className="site-nav__link" href={item.href} key={item.href}>
                 {noDangling(item.label)}
               </a>
             ))}
           </nav>
 
-          <button className="language-switcher" type="button" aria-label="Текущий язык: русский">
-            <span>Ru</span>
-            <Icon name="chevron-down" className="language-switcher__icon" />
-          </button>
+          <div className="language-control" ref={languageControlRef}>
+            <button
+              className="language-switcher"
+              type="button"
+              aria-expanded={isLanguageMenuOpen}
+              aria-controls="language-menu"
+              aria-haspopup="true"
+              aria-label={copy.language.current(languageOptions.find((option) => option.code === language)?.name ?? language)}
+              onClick={() => setLanguageMenuOpen((current) => !current)}
+            >
+              <span>{language.toUpperCase()}</span>
+              <Icon name="chevron-down" className="language-switcher__icon" />
+            </button>
+
+            <div
+              className={`language-menu ${isLanguageMenuOpen ? 'language-menu--open' : ''}`}
+              id="language-menu"
+              role="radiogroup"
+              aria-label={copy.language.menu}
+              aria-hidden={!isLanguageMenuOpen}
+            >
+              {languageOptions.map((option) => (
+                <label className="language-option" key={option.code}>
+                  <input
+                    type="radio"
+                    name="portfolio-language"
+                    value={option.code}
+                    checked={language === option.code}
+                    tabIndex={isLanguageMenuOpen ? 0 : -1}
+                    onChange={() => {
+                      setLanguage(option.code);
+                      setLanguageMenuOpen(false);
+                    }}
+                  />
+                  <span className="language-option__control" aria-hidden="true" />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -389,7 +823,7 @@ function App() {
             <img
               className="hero__portrait"
               src={`${A}photo-main.jpg`}
-              alt="Артем, продуктовый дизайнер"
+              alt={copy.hero.portraitAlt}
               width="240"
               height="240"
               fetchPriority="high"
@@ -397,18 +831,18 @@ function App() {
 
             <div className="action-grid hero__actions">
               <ActionTile
-                number="[01 - 03]"
-                label="Проекты"
+                number={copy.tiles.projectsNumber}
+                label={copy.tiles.projects}
                 href="#projects"
                 icon="arrow-down-right"
-                ariaLabel="Перейти к проектам"
+                ariaLabel={copy.tiles.projectsAria}
               />
               <ActionTile
-                number="[RU, EN]"
-                label="Резюме"
+                number={copy.tiles.resumeNumber}
+                label={copy.tiles.resume}
                 icon="download"
                 onClick={() => setActiveModal('resume')}
-                ariaLabel="Выбрать язык резюме"
+                ariaLabel={copy.tiles.resumeAria}
                 buttonRef={resumeButtonRef}
               />
             </div>
@@ -416,51 +850,45 @@ function App() {
 
           <div className="hero__copy reveal">
             <h1 className="visually-hidden" id="intro-title">
-              Артем, продуктовый дизайнер
+              {noDangling(copy.hero.title)}
             </h1>
-            <p>{noDangling('Привет! Я Артем, продуктовый дизайнер с опытом в B2C и SaaS.')}</p>
-            <p>
-              {noDangling(
-                'Проектирую пользовательские сценарии и помогаю продуктам развиваться — от запуска MVP до последующих этапов роста, работая на стыке пользовательского опыта и бизнес-задач.',
-              )}
-            </p>
-            <p>
-              {noDangling(
-                'Фокусируюсь на моментах, где пользователь теряется, и превращаю сложную логику в понятные действия, опираясь на пользовательские сигналы, поведение и продуктовые метрики.',
-              )}
-            </p>
+            {copy.hero.paragraphs.map((paragraph) => (
+              <p key={paragraph}>{noDangling(paragraph)}</p>
+            ))}
           </div>
         </section>
 
         <section className="section-block interests" id="about" aria-labelledby="about-title" data-motion-scope data-chaos-part>
-          <SectionHeader title="Интересы" titleId="about-title" />
+          <SectionHeader title={copy.sections.interests} titleId="about-title" />
           <div className="section-grid interests__body">
             <div className="rail-action reveal">
               <ActionTile
-                number="[01 - 05]"
-                label="Навыки"
+                number={copy.tiles.skillsNumber}
+                label={copy.tiles.skills}
                 href="#skills"
                 icon="arrow-down-right"
-                ariaLabel="Перейти к навыкам"
+                ariaLabel={copy.tiles.skillsAria}
               />
             </div>
 
             <div className="interests__content reveal">
               <p className="lead">
                 {noDangling(
-                  'Люблю работать в стартапах так как в них можно влиять не только на интерфейс, но и на саму логику продукта: от первых сценариев до запуска и роста.',
+                  language === 'ru'
+                    ? 'Люблю работать в стартапах так как в них можно влиять не только на интерфейс, но и на саму логику продукта: от первых сценариев до запуска и роста.'
+                    : 'I love working in startups because you can influence not only the interface but also the logic of the product: from the initial scenarios to launch and growth.',
                 )}
               </p>
 
-              <MetricsList metrics={interestMetrics} className="metrics--interests" />
+              <MetricsList metrics={copy.interestMetrics} className="metrics--interests" />
             </div>
           </div>
         </section>
 
         <section className="section-block skills" id="skills" aria-labelledby="skills-title" data-motion-scope data-chaos-part>
-          <SectionHeader title="Навыки" titleId="skills-title" />
+          <SectionHeader title={copy.sections.skills} titleId="skills-title" />
           <div className="skill-accordion reveal">
-            {skills.map((skill, index) => (
+            {copy.skills.map((skill, index) => (
               <SkillAccordionItem
                 index={index}
                 isOpen={openSkillId === skill.id}
@@ -477,16 +905,22 @@ function App() {
         </section>
 
         <section className="section-block cases" id="projects" aria-labelledby="projects-title" data-motion-scope data-chaos-part>
-          <SectionHeader title="Проекты" titleId="projects-title" />
+          <SectionHeader title={copy.sections.projects} titleId="projects-title" />
           <div className="cases__list">
-            {cases.map((caseStudy) => (
-              <CaseCard caseStudy={caseStudy} key={caseStudy.id} onChaos={triggerChaos} chaosButtonRef={chaosButtonRef} />
+            {copy.cases.map((caseStudy) => (
+              <CaseCard
+                caseStudy={caseStudy}
+                key={caseStudy.id}
+                onChaos={triggerChaos}
+                chaosButtonRef={chaosButtonRef}
+                labels={copy.caseLabels}
+              />
             ))}
           </div>
         </section>
       </main>
 
-      <Footer />
+      <Footer labels={copy.footer} />
 
       {activeModal === 'resume' && (
         <ModalShell onClose={closeModal}>
@@ -501,11 +935,11 @@ function App() {
           >
             <div className="modal__content">
               <div className="modal__copy">
-                <h2 id="resume-modal-title">Выберите нужный язык</h2>
+                <h2 id="resume-modal-title">{noDangling(copy.modal.resumeTitle)}</h2>
                 <p id="resume-modal-description">
-                  {noDangling('Хорошего вам дня и настроения. Это все. А еще улыбнитесь.')}
+                  {noDangling(copy.modal.resumeDescription[0])}
                   <br />
-                  {noDangling('О, и не забудьте выбрать язык.')}
+                  {noDangling(copy.modal.resumeDescription[1])}
                 </p>
               </div>
               <div className="modal__actions">
@@ -534,19 +968,17 @@ function App() {
           >
             <div className="modal__content">
               <div className="modal__copy">
-                <h2 id="ux-modal-title">Поздравляю, вы только что сломали интерфейс!</h2>
+                <h2 id="ux-modal-title">{noDangling(copy.modal.chaosTitle)}</h2>
                 <p id="ux-modal-description">
-                  {noDangling(
-                    'Не волнуйтесь, серьезно, любой интерфейс можно сломать. Хороший же интерфейс легко собрать обратно.',
-                  )}
+                  {noDangling(copy.modal.chaosDescription)}
                 </p>
               </div>
               <div className="modal__actions">
                 <button className="modal__button" type="button" onClick={closeModal}>
-                  Собрать обратно
+                  {noDangling(copy.modal.chaosReset)}
                 </button>
                 <button className="modal__button" type="button" onClick={openCasesFromChaos}>
-                  {noDangling('Посмотреть кейсы')}
+                  {noDangling(copy.modal.chaosCases)}
                 </button>
               </div>
             </div>
@@ -616,11 +1048,8 @@ function MetricsList({ metrics, className = '' }: { metrics: Metric[]; className
         <div className="metric" key={metric.label}>
           <dt>{noDangling(metric.label)}</dt>
           <dd>
-            {metric.icon ? (
-              <span className="metric__value-with-icon">
-                <span>{noDangling(metric.value)}</span>
-                <Icon name={metric.icon} />
-              </span>
+            {metric.href || metric.icon ? (
+              <MetricValue metric={metric} />
             ) : (
               noDangling(metric.value)
             )}
@@ -628,6 +1057,33 @@ function MetricsList({ metrics, className = '' }: { metrics: Metric[]; className
         </div>
       ))}
     </dl>
+  );
+}
+
+function MetricValue({ metric }: { metric: Metric }) {
+  const content = (
+    <>
+      <span>{noDangling(metric.value)}</span>
+      {metric.icon && <Icon name={metric.icon} />}
+    </>
+  );
+
+  if (metric.href) {
+    return (
+      <a
+        className="metric__value-with-icon metric__value-link"
+        href={metric.href}
+        aria-label={metric.ariaLabel ?? metric.value}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <span className="metric__value-with-icon">
+      {content}
+    </span>
   );
 }
 
@@ -673,16 +1129,18 @@ function SkillAccordionItem({
       </h3>
 
       <div
+        aria-hidden={!isOpen}
         aria-labelledby={triggerId}
-        className="skill-item__panel"
-        hidden={!isOpen}
+        className={`skill-item__panel ${isOpen ? 'skill-item__panel--open' : ''}`}
         id={panelId}
         role="region"
       >
-        <div aria-hidden="true" />
-        <div className="skill-item__content">
-          <p>{noDangling(skill.text)}</p>
-          <ChipList chips={skill.chips} />
+        <div className="skill-item__panel-inner">
+          <div aria-hidden="true" />
+          <div className="skill-item__content">
+            <p>{noDangling(skill.text)}</p>
+            <ChipList chips={skill.chips} />
+          </div>
         </div>
       </div>
     </article>
@@ -766,10 +1224,12 @@ function ChipList({ chips }: { chips: string[] }) {
 function CaseCard({
   caseStudy,
   chaosButtonRef,
+  labels,
   onChaos,
 }: {
   caseStudy: CaseStudy;
   chaosButtonRef: RefObject<HTMLButtonElement | null>;
+  labels: PortfolioContent['caseLabels'];
   onChaos: () => void;
 }) {
   const [leverPulled, setLeverPulled] = useState(false);
@@ -789,11 +1249,11 @@ function CaseCard({
         <div className="rail-action">
           <ActionTile
             number={caseStudy.number}
-            label="Behance"
+            label={labels.behance}
             icon="arrow-up-right"
             href={caseStudy.href}
             targetBlank
-            ariaLabel={`Открыть кейс ${caseStudy.title} на Behance`}
+            ariaLabel={labels.openBehance(caseStudy.title)}
           />
         </div>
 
@@ -807,7 +1267,7 @@ function CaseCard({
             <MetricsList metrics={caseStudy.metrics} />
             {caseStudy.hasChaosButton && (
               <div className="metric metric--danger">
-                <dt>Пасхалка</dt>
+                <dt>{noDangling(labels.danger)}</dt>
                 <dd>
                   <button
                     className={`danger-button ${leverPulled ? 'danger-button--pulled' : ''}`}
@@ -815,7 +1275,7 @@ function CaseCard({
                     onClick={handleChaosButtonClick}
                     ref={chaosButtonRef}
                   >
-                    <span>{noDangling('Не нажимать')}</span>
+                    <span>{noDangling(labels.dangerButton)}</span>
                     <img className="danger-button__lever" src={`${A}machineLever.svg`} alt="" aria-hidden="true" />
                   </button>
                 </dd>
@@ -827,17 +1287,21 @@ function CaseCard({
 
       <div className="case-card__content section-grid reveal">
         <div className="impact-list">
-          <ImpactCard title={caseStudy.hasChaosButton ? 'Выводы и рост' : 'Достижения и вклад'} items={caseStudy.contributions} />
-          {caseStudy.results && <ImpactCard title="Результаты" items={caseStudy.results} />}
+          <ImpactCard
+            title={caseStudy.contributionsTitle ?? (caseStudy.hasChaosButton ? labels.insights : labels.contributions)}
+            items={caseStudy.contributions}
+          />
+          {caseStudy.results && <ImpactCard title={caseStudy.resultsTitle ?? labels.results} items={caseStudy.results} />}
         </div>
 
         <BeforeAfterSlider
           afterAlt={`${caseStudy.imageAlt}: версия после`}
           afterSrc={caseStudy.image}
+          afterValueText={labels.afterPercent}
           beforeAlt={`${caseStudy.imageAlt}: версия до`}
           beforeSrc={caseStudy.image}
           compact={caseStudy.compactImage}
-          label={`Сравнение до и после: ${caseStudy.title}`}
+          label={labels.slider(caseStudy.title)}
         />
       </div>
     </article>
@@ -860,6 +1324,7 @@ function ImpactCard({ title, items }: { title: string; items: string[] }) {
 function BeforeAfterSlider({
   afterAlt,
   afterSrc,
+  afterValueText,
   beforeAlt,
   beforeSrc,
   compact,
@@ -867,6 +1332,7 @@ function BeforeAfterSlider({
 }: {
   afterAlt: string;
   afterSrc: string;
+  afterValueText: (value: number) => string;
   beforeAlt: string;
   beforeSrc: string;
   compact?: boolean;
@@ -981,7 +1447,7 @@ function BeforeAfterSlider({
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={Math.round(value)}
-        aria-valuetext={noDangling(`${Math.round(value)}% после`)}
+        aria-valuetext={noDangling(afterValueText(Math.round(value)))}
         className="case-slider__handle"
         onKeyDown={handleKeyDown}
         role="slider"
@@ -1001,7 +1467,7 @@ function ModalShell({ children, onClose }: { children: ReactNode; onClose: () =>
   );
 }
 
-function Footer() {
+function Footer({ labels }: { labels: PortfolioContent['footer'] }) {
   const footerLinks = [
     { type: 'Web App', name: 'Comentee', href: links.comentee },
     { type: 'Mobile App', name: 'Secret Santa', href: links.secretSanta },
@@ -1009,25 +1475,25 @@ function Footer() {
   ];
 
   const socials = [
-    { label: 'Написать на email', href: links.email, icon: 'email-icon.svg' },
-    { label: 'Открыть Telegram', href: links.telegram, icon: 'telegram-icon.svg' },
-    { label: 'Открыть LinkedIn', href: links.linkedin, icon: 'linkedin-icon.svg' },
+    { label: labels.email, href: links.email, icon: 'email-icon.svg' },
+    { label: labels.telegram, href: links.telegram, icon: 'telegram-icon.svg' },
+    { label: labels.linkedin, href: links.linkedin, icon: 'linkedin-icon.svg' },
   ];
 
   return (
     <footer className="footer" id="contacts" aria-labelledby="contacts-title" data-motion-scope data-chaos-part>
       <div className="divider reveal reveal--line" />
       <div className="footer__content section-grid reveal">
-        <h2 id="contacts-title">© 2026</h2>
+        <h2 id="contacts-title">{labels.copyright}</h2>
         <div className="footer__right">
-          <nav className="footer__links" aria-label="Кейсы в Behance">
+          <nav className="footer__links" aria-label={labels.casesNav}>
             {footerLinks.map((link) => (
               <a
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 key={link.name}
-                aria-label={`Открыть кейс ${link.name} на Behance`}
+                aria-label={labels.openCase(link.name)}
               >
                 <span>{noDangling(link.type)}</span>
                 <span className="footer__dot" aria-hidden="true" />
