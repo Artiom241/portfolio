@@ -27,6 +27,7 @@ const links = {
 type Metric = {
   label: string;
   value: string;
+  icon?: IconName;
 };
 
 type Skill = {
@@ -63,7 +64,7 @@ const navItems = [
 
 const interestMetrics: Metric[] = [
   { label: 'Опыт в продукте', value: '2.5+ года\nB2C и SaaS' },
-  { label: 'Платформы', value: 'Web + Mobile' },
+  { label: 'Платформы', value: 'Web +\nMobile' },
   { label: 'Роль', value: 'Product\u00A0designer\n(end-to-end)' },
   { label: 'Фокус', value: 'MVP, Growth' },
 ];
@@ -118,6 +119,7 @@ const cases: CaseStudy[] = [
       { label: 'Год', value: '2025-2026' },
       { label: 'Платформы', value: 'Web' },
       { label: 'Роль', value: 'Product designer' },
+      { label: 'Посмотреть', value: 'Comentee.ru', icon: 'arrow-right' },
     ],
     contributions: [
       'Провёл анализ пользовательских сценариев и выявил проблему в ролевой модели',
@@ -144,6 +146,7 @@ const cases: CaseStudy[] = [
       { label: 'Год', value: '2024-2025' },
       { label: 'Платформы', value: 'Web, mobile' },
       { label: 'Роль', value: 'Product designer' },
+      { label: 'Посмотреть', value: 'App Store', icon: 'arrow-right' },
     ],
     contributions: [
       'Переработал entry point и флоу авторизации',
@@ -183,6 +186,22 @@ const cases: CaseStudy[] = [
     hasChaosButton: true,
   },
 ];
+
+const shortWords =
+  'а|без|бы|в|во|для|до|же|за|и|из|к|ко|ли|между|на|над|не|ни|но|о|об|обо|от|перед|по|под|после|при|с|со|у|через';
+const danglingWordPattern = new RegExp(`(^|[\\s([{«„"—-])(${shortWords})[ \\t]+`, 'giu');
+
+function noDangling(text: string) {
+  let result = text;
+  let next = result.replace(danglingWordPattern, (_match, prefix: string, word: string) => `${prefix}${word}\u00A0`);
+
+  while (next !== result) {
+    result = next;
+    next = result.replace(danglingWordPattern, (_match, prefix: string, word: string) => `${prefix}${word}\u00A0`);
+  }
+
+  return result;
+}
 
 function useReveal() {
   useEffect(() => {
@@ -340,7 +359,7 @@ function App() {
   return (
     <div className={`portfolio ${chaosActive ? 'portfolio--chaos' : ''}`}>
       <a className="skip-link" href="#main">
-        Перейти к основному содержанию
+        {noDangling('Перейти к основному содержанию')}
       </a>
 
       <header className="site-header" role="banner" data-chaos-part>
@@ -352,7 +371,7 @@ function App() {
           <nav className="site-nav" aria-label="Основная навигация">
             {navItems.map((item) => (
               <a className="site-nav__link" href={item.href} key={item.href}>
-                {item.label}
+                {noDangling(item.label)}
               </a>
             ))}
           </nav>
@@ -399,14 +418,16 @@ function App() {
             <h1 className="visually-hidden" id="intro-title">
               Артем, продуктовый дизайнер
             </h1>
-            <p>Привет! Я Артем, продуктовый дизайнер с опытом в B2C и SaaS.</p>
+            <p>{noDangling('Привет! Я Артем, продуктовый дизайнер с опытом в B2C и SaaS.')}</p>
             <p>
-              Проектирую пользовательские сценарии и помогаю продуктам развиваться — от запуска MVP до последующих
-              этапов роста, работая на стыке пользовательского опыта и бизнес-задач.
+              {noDangling(
+                'Проектирую пользовательские сценарии и помогаю продуктам развиваться — от запуска MVP до последующих этапов роста, работая на стыке пользовательского опыта и бизнес-задач.',
+              )}
             </p>
             <p>
-              Фокусируюсь на моментах, где пользователь теряется, и превращаю сложную логику в понятные действия,
-              опираясь на пользовательские сигналы, поведение и продуктовые метрики.
+              {noDangling(
+                'Фокусируюсь на моментах, где пользователь теряется, и превращаю сложную логику в понятные действия, опираясь на пользовательские сигналы, поведение и продуктовые метрики.',
+              )}
             </p>
           </div>
         </section>
@@ -426,8 +447,9 @@ function App() {
 
             <div className="interests__content reveal">
               <p className="lead">
-                Люблю работать в стартапах так как в них можно влиять не только на интерфейс, но и на саму логику
-                продукта: от первых сценариев до запуска и роста.
+                {noDangling(
+                  'Люблю работать в стартапах так как в них можно влиять не только на интерфейс, но и на саму логику продукта: от первых сценариев до запуска и роста.',
+                )}
               </p>
 
               <MetricsList metrics={interestMetrics} className="metrics--interests" />
@@ -481,9 +503,9 @@ function App() {
               <div className="modal__copy">
                 <h2 id="resume-modal-title">Выберите нужный язык</h2>
                 <p id="resume-modal-description">
-                  Хорошего вам дня и настроения. Это все. А еще улыбнитесь.
+                  {noDangling('Хорошего вам дня и настроения. Это все. А еще улыбнитесь.')}
                   <br />
-                  О, и не забудьте выбрать язык.
+                  {noDangling('О, и не забудьте выбрать язык.')}
                 </p>
               </div>
               <div className="modal__actions">
@@ -514,7 +536,9 @@ function App() {
               <div className="modal__copy">
                 <h2 id="ux-modal-title">Поздравляю, вы только что сломали интерфейс!</h2>
                 <p id="ux-modal-description">
-                  Не волнуйтесь, серьезно, любой интерфейс можно сломать. Хороший же интерфейс легко собрать обратно.
+                  {noDangling(
+                    'Не волнуйтесь, серьезно, любой интерфейс можно сломать. Хороший же интерфейс легко собрать обратно.',
+                  )}
                 </p>
               </div>
               <div className="modal__actions">
@@ -522,7 +546,7 @@ function App() {
                   Собрать обратно
                 </button>
                 <button className="modal__button" type="button" onClick={openCasesFromChaos}>
-                  Посмотреть кейсы
+                  {noDangling('Посмотреть кейсы')}
                 </button>
               </div>
             </div>
@@ -590,8 +614,17 @@ function MetricsList({ metrics, className = '' }: { metrics: Metric[]; className
     <dl className={`metrics ${className}`}>
       {metrics.map((metric) => (
         <div className="metric" key={metric.label}>
-          <dt>{metric.label}</dt>
-          <dd>{metric.value}</dd>
+          <dt>{noDangling(metric.label)}</dt>
+          <dd>
+            {metric.icon ? (
+              <span className="metric__value-with-icon">
+                <span>{noDangling(metric.value)}</span>
+                <Icon name={metric.icon} />
+              </span>
+            ) : (
+              noDangling(metric.value)
+            )}
+          </dd>
         </div>
       ))}
     </dl>
@@ -631,7 +664,7 @@ function SkillAccordionItem({
         >
           <span className="skill-item__number">{skill.number}</span>
           <span className="skill-item__body">
-            <span className="skill-item__title">{skill.title}</span>
+            <span className="skill-item__title">{noDangling(skill.title)}</span>
             <span className="skill-item__icon" aria-hidden="true">
               <Icon name={isOpen ? 'minus' : 'plus'} />
             </span>
@@ -648,7 +681,7 @@ function SkillAccordionItem({
       >
         <div aria-hidden="true" />
         <div className="skill-item__content">
-          <p>{skill.text}</p>
+          <p>{noDangling(skill.text)}</p>
           <ChipList chips={skill.chips} />
         </div>
       </div>
@@ -656,7 +689,7 @@ function SkillAccordionItem({
   );
 }
 
-type IconName = 'arrow-down-right' | 'arrow-up-right' | 'chevron-down' | 'download' | 'minus' | 'plus';
+type IconName = 'arrow-down-right' | 'arrow-right' | 'arrow-up-right' | 'chevron-down' | 'download' | 'minus' | 'plus';
 
 function Icon({ name, className = '' }: { name: IconName; className?: string }) {
   const common = {
@@ -679,6 +712,13 @@ function Icon({ name, className = '' }: { name: IconName; className?: string }) 
         <svg {...common} viewBox="0 0 24 24">
           <path d="M7 17 17 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M7 7h10v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'arrow-right':
+      return (
+        <svg {...common} viewBox="0 0 24 24">
+          <path d="M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="m13 6 6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case 'chevron-down':
@@ -732,6 +772,17 @@ function CaseCard({
   chaosButtonRef: RefObject<HTMLButtonElement | null>;
   onChaos: () => void;
 }) {
+  const [leverPulled, setLeverPulled] = useState(false);
+
+  const handleChaosButtonClick = () => {
+    if (leverPulled) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setLeverPulled(true);
+    window.setTimeout(() => setLeverPulled(false), reduced ? 1 : 620);
+    window.setTimeout(onChaos, reduced ? 0 : 520);
+  };
+
   return (
     <article className="case-card" id={caseStudy.id} data-motion-scope data-chaos-part>
       <div className="case-card__heading section-grid reveal">
@@ -748,8 +799,8 @@ function CaseCard({
 
         <div className="case-card__summary">
           <div className="case-card__copy">
-            <h3>{caseStudy.title}</h3>
-            <p>{caseStudy.description}</p>
+            <h3>{noDangling(caseStudy.title)}</h3>
+            <p>{noDangling(caseStudy.description)}</p>
           </div>
 
           <div className="case-card__meta">
@@ -758,8 +809,14 @@ function CaseCard({
               <div className="metric metric--danger">
                 <dt>Пасхалка</dt>
                 <dd>
-                  <button className="danger-button" type="button" onClick={onChaos} ref={chaosButtonRef}>
-                    <span>Не нажимать</span>
+                  <button
+                    className={`danger-button ${leverPulled ? 'danger-button--pulled' : ''}`}
+                    type="button"
+                    onClick={handleChaosButtonClick}
+                    ref={chaosButtonRef}
+                  >
+                    <span>{noDangling('Не нажимать')}</span>
+                    <img className="danger-button__lever" src={`${A}machineLever.svg`} alt="" aria-hidden="true" />
                   </button>
                 </dd>
               </div>
@@ -790,10 +847,10 @@ function CaseCard({
 function ImpactCard({ title, items }: { title: string; items: string[] }) {
   return (
     <section className="impact-card" aria-label={title}>
-      <h4>{title}</h4>
+      <h4>{noDangling(title)}</h4>
       <ul>
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item}>{noDangling(item)}</li>
         ))}
       </ul>
     </section>
@@ -920,17 +977,17 @@ function BeforeAfterSlider({
         <img className="case-slider__image" src={afterSrc} alt="" loading="lazy" />
       </div>
       <button
-        aria-label={label}
+        aria-label={noDangling(label)}
         aria-valuemax={100}
         aria-valuemin={0}
         aria-valuenow={Math.round(value)}
-        aria-valuetext={`${Math.round(value)}% после`}
+        aria-valuetext={noDangling(`${Math.round(value)}% после`)}
         className="case-slider__handle"
         onKeyDown={handleKeyDown}
         role="slider"
         type="button"
       >
-        <span className="visually-hidden">{label}</span>
+        <span className="visually-hidden">{noDangling(label)}</span>
       </button>
     </div>
   );
@@ -972,9 +1029,9 @@ function Footer() {
                 key={link.name}
                 aria-label={`Открыть кейс ${link.name} на Behance`}
               >
-                <span>{link.type}</span>
+                <span>{noDangling(link.type)}</span>
                 <span className="footer__dot" aria-hidden="true" />
-                <span>{link.name}</span>
+                <span>{noDangling(link.name)}</span>
               </a>
             ))}
           </nav>
