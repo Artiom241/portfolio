@@ -5,6 +5,8 @@
   --muted: rgba(255, 255, 255, 0.72);
   --tertiary: rgba(255, 255, 255, 0.4);
   --divider: rgba(255, 255, 255, 0.16);
+  --slider-handle-bg: #292929;
+  --slider-handle-hover: #333;
   --card: rgba(255, 255, 255, 0.08);
   --danger: #e0322c;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -892,6 +894,7 @@ ul {
   background: transparent;
   cursor: grab;
   transition: left var(--duration-fast) var(--ease-out);
+  z-index: 2;
 }
 
 .case-slider__handle-label {
@@ -902,9 +905,9 @@ ul {
   justify-content: center;
   padding: 14px 8px;
   border-radius: 9999px;
-  background: var(--divider);
+  background: var(--slider-handle-bg);
   color: var(--text);
-  font-family: "Helvetica Neue", var(--font-family);
+  font-family: "Helvetica Neue", var(--font-sans);
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -918,7 +921,7 @@ ul {
 
 .case-slider__handle:hover .case-slider__handle-label,
 .case-slider__handle:focus-visible .case-slider__handle-label {
-  background: rgba(255, 255, 255, 0.24);
+  background: var(--slider-handle-hover);
   transform: scale(1.03);
 }
 
