@@ -877,10 +877,6 @@ ul {
   user-select: none;
 }
 
-.case-slider__image--before {
-  filter: saturate(0.12) brightness(0.58) contrast(1.08);
-}
-
 .case-slider__overlay {
   position: absolute;
   inset: 0 auto 0 0;

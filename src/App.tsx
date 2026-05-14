@@ -59,6 +59,10 @@ type CaseStudy = {
   contributionsTitle?: string;
   resultsTitle?: string;
   image: string;
+  imageBefore?: string;
+  imageAfter?: string;
+  imageBeforeAlt?: string;
+  imageAfterAlt?: string;
   imageAlt: string;
   compactImage?: boolean;
   hasChaosButton?: boolean;
@@ -216,7 +220,11 @@ const cases: CaseStudy[] = [
       'Снижен когнитивный порог входа в продукт',
       'Подготовил продукт к масштабированию',
     ],
-    image: `${A}case-comentee.jpg`,
+    image: `${A}case-comentee-after.png`,
+    imageBefore: `${A}case-comentee-before.png`,
+    imageAfter: `${A}case-comentee-after.png`,
+    imageBeforeAlt: 'Comentee до редизайна: экран профиля в веб-приложении',
+    imageAfterAlt: 'Comentee после редизайна: главный экран веб-приложения',
     imageAlt: 'Обложка кейса Comentee: интерфейс веб-приложения',
   },
   {
@@ -425,7 +433,11 @@ const content: Record<Language, PortfolioContent> = {
         ],
         contributionsTitle: 'Achievements and Contributions',
         resultsTitle: 'Results',
-        image: `${A}case-comentee.jpg`,
+        image: `${A}case-comentee-after.png`,
+        imageBefore: `${A}case-comentee-before.png`,
+        imageAfter: `${A}case-comentee-after.png`,
+        imageBeforeAlt: 'Comentee before redesign: profile screen in the web app',
+        imageAfterAlt: 'Comentee after redesign: web app dashboard',
         imageAlt: 'Comentee case cover: web app interface',
       },
       {
@@ -1314,11 +1326,11 @@ function CaseCard({
         </div>
 
         <BeforeAfterSlider
-          afterAlt={`${caseStudy.imageAlt}: версия после`}
-          afterSrc={caseStudy.image}
+          afterAlt={caseStudy.imageAfterAlt ?? `${caseStudy.imageAlt}: версия после`}
+          afterSrc={caseStudy.imageAfter ?? caseStudy.image}
           afterValueText={labels.afterPercent}
-          beforeAlt={`${caseStudy.imageAlt}: версия до`}
-          beforeSrc={caseStudy.image}
+          beforeAlt={caseStudy.imageBeforeAlt ?? `${caseStudy.imageAlt}: версия до`}
+          beforeSrc={caseStudy.imageBefore ?? caseStudy.image}
           compact={caseStudy.compactImage}
           handleLabel={labels.sliderHandle}
           label={labels.slider(caseStudy.title)}
