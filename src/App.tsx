@@ -71,6 +71,17 @@ type CaseStudy = {
 type ModalType = 'resume' | 'chaos' | null;
 type Language = 'ru' | 'en';
 
+const slotButtonAssets: Record<Language, { down: string; up: string }> = {
+  ru: {
+    down: 'special-button-down.svg',
+    up: 'special-button-up.svg',
+  },
+  en: {
+    down: 'special-button-down.svg',
+    up: 'special-button-en.svg',
+  },
+};
+
 type PortfolioContent = {
   navItems: NavItem[];
   interestMetrics: Metric[];
@@ -688,10 +699,10 @@ function App() {
   const [openSkillId, setOpenSkillId] = useState('logic');
   const modalRef = useRef<HTMLDivElement>(null);
   const languageControlRef = useRef<HTMLDivElement>(null);
-  const chaosButtonRef = useRef<HTMLButtonElement>(null);
   const resumeButtonRef = useRef<HTMLButtonElement>(null);
   const skillButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const copy = content[language];
+  const slotButtonAsset = slotButtonAssets[language];
 
   useReveal();
 
@@ -948,9 +959,8 @@ function App() {
                 caseStudy={caseStudy}
                 key={caseStudy.id}
                 onChaos={triggerChaos}
-                chaosButtonRef={chaosButtonRef}
                 labels={copy.caseLabels}
-                dangerButtonAsset={language === 'en' ? 'special-button-en.svg' : 'special-button.svg'}
+                slotButtonAsset={slotButtonAsset}
               />
             ))}
           </div>
@@ -1258,30 +1268,219 @@ function ChipList({ chips }: { chips: string[] }) {
   );
 }
 
+type SlotLeverPhase = 'idle' | 'pressing' | 'releasing';
+
+const easeInCubic = (value: number) => value * value * value;
+const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
+const easeOutBack = (value: number) => {
+  const c1 = 1.24;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(value - 1, 3) + c1 * Math.pow(value - 1, 2);
+};
+const clampMotionIntensity = (value: number) => Math.min(Math.max(value, 0.85), 1.15);
+
+function SlotMachineLeverButton({
+  ariaLabel,
+  downSrc,
+  intensity = 1,
+  onPull,
+  upSrc,
+}: {
+  ariaLabel: string;
+  downSrc: string;
+  intensity?: number;
+  onPull: () => void;
+  upSrc: string;
+}) {
+  const [phase, setPhaseState] = useState<SlotLeverPhase>('idle');
+  const animationFrameRef = useRef<number | null>(null);
+  const angleRef = useRef(0);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const phaseRef = useRef<SlotLeverPhase>('idle');
+  const normalizedIntensity = clampMotionIntensity(intensity);
+  const pullAngle = 180 * normalizedIntensity;
+  const overshootAngle = pullAngle + 8 * normalizedIntensity;
+
+  const setPhase = useCallback((nextPhase: SlotLeverPhase) => {
+    phaseRef.current = nextPhase;
+    setPhaseState(nextPhase);
+  }, []);
+
+  const setAngle = useCallback((angle: number) => {
+    angleRef.current = angle;
+    buttonRef.current?.style.setProperty('--lever-angle', `${angle}deg`);
+  }, []);
+
+  const cancelAnimation = useCallback(() => {
+    if (animationFrameRef.current === null) return;
+    window.cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = null;
+  }, []);
+
+  const animateLever = useCallback(
+    (
+      segments: Array<{ duration: number; easing: (value: number) => number; to: number }>,
+      onComplete?: () => void,
+    ) => {
+      cancelAnimation();
+
+      let segmentIndex = 0;
+      let segmentStart = performance.now();
+      let from = angleRef.current;
+
+      const tick = (now: number) => {
+        const segment = segments[segmentIndex];
+        const progress = Math.min((now - segmentStart) / segment.duration, 1);
+        const eased = segment.easing(progress);
+        setAngle(from + (segment.to - from) * eased);
+
+        if (progress < 1) {
+          animationFrameRef.current = window.requestAnimationFrame(tick);
+          return;
+        }
+
+        segmentIndex += 1;
+        if (segmentIndex >= segments.length) {
+          animationFrameRef.current = null;
+          onComplete?.();
+          return;
+        }
+
+        from = angleRef.current;
+        segmentStart = now;
+        animationFrameRef.current = window.requestAnimationFrame(tick);
+      };
+
+      animationFrameRef.current = window.requestAnimationFrame(tick);
+    },
+    [cancelAnimation, setAngle],
+  );
+
+  useEffect(() => () => cancelAnimation(), [cancelAnimation]);
+
+  const beginPull = useCallback(() => {
+    if (phaseRef.current !== 'idle') return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      onPull();
+      return;
+    }
+
+    setPhase('pressing');
+    animateLever([
+      { duration: 170, easing: easeInCubic, to: overshootAngle },
+      { duration: 90, easing: easeOutBack, to: pullAngle },
+    ]);
+  }, [animateLever, onPull, overshootAngle, pullAngle, setPhase]);
+
+  const releasePull = useCallback(
+    (shouldTrigger: boolean) => {
+      if (phaseRef.current !== 'pressing') return;
+
+      setPhase('releasing');
+      const needsDownFollowThrough = angleRef.current < pullAngle * 0.75;
+      const returnSegments = [
+        { duration: 280, easing: easeOutCubic, to: -5 * normalizedIntensity },
+        { duration: 120, easing: easeOutBack, to: 0 },
+      ];
+
+      animateLever(
+        needsDownFollowThrough
+          ? [
+              { duration: 120, easing: easeInCubic, to: overshootAngle },
+              { duration: 70, easing: easeOutBack, to: pullAngle },
+              ...returnSegments,
+            ]
+          : returnSegments,
+        () => {
+          setAngle(0);
+          setPhase('idle');
+          if (shouldTrigger) onPull();
+        },
+      );
+    },
+    [animateLever, normalizedIntensity, onPull, overshootAngle, pullAngle, setAngle, setPhase],
+  );
+
+  const cancelPull = useCallback(() => {
+    if (phaseRef.current !== 'pressing') return;
+
+    setPhase('releasing');
+    animateLever(
+      [{ duration: 180, easing: easeOutCubic, to: 0 }],
+      () => {
+        setAngle(0);
+        setPhase('idle');
+      },
+    );
+  }, [animateLever, setAngle, setPhase]);
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0 || phaseRef.current !== 'idle') return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    beginPull();
+  };
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    releasePull(true);
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if ((event.key !== ' ' && event.key !== 'Enter') || event.repeat) return;
+    event.preventDefault();
+    beginPull();
+  };
+
+  const handleKeyUp = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== ' ' && event.key !== 'Enter') return;
+    event.preventDefault();
+    releasePull(true);
+  };
+
+  return (
+    <button
+      aria-label={noDangling(ariaLabel)}
+      aria-pressed={phase !== 'idle'}
+      className={`slot-machine-button slot-machine-button--${phase}`}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
+      onPointerCancel={cancelPull}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      ref={buttonRef}
+      style={{ '--lever-angle': '0deg' } as CSSProperties}
+      type="button"
+    >
+      <span className="visually-hidden">{noDangling(ariaLabel)}</span>
+      <span className="slot-machine-button__body" aria-hidden="true">
+        <img src={upSrc} alt="" />
+      </span>
+      <span className="slot-machine-button__connector" aria-hidden="true">
+        <img src={upSrc} alt="" />
+      </span>
+      <span className="slot-machine-button__lever-motion" aria-hidden="true">
+        <img src={upSrc} alt="" />
+      </span>
+      <img className="slot-machine-button__preload" src={downSrc} alt="" aria-hidden="true" />
+    </button>
+  );
+}
+
 function CaseCard({
   caseStudy,
-  chaosButtonRef,
-  dangerButtonAsset,
   labels,
   onChaos,
+  slotButtonAsset,
 }: {
   caseStudy: CaseStudy;
-  chaosButtonRef: RefObject<HTMLButtonElement | null>;
-  dangerButtonAsset: string;
   labels: PortfolioContent['caseLabels'];
   onChaos: () => void;
+  slotButtonAsset: { down: string; up: string };
 }) {
-  const [leverPulled, setLeverPulled] = useState(false);
-  const dangerButtonSrc = `${A}${dangerButtonAsset}`;
-
-  const handleChaosButtonClick = () => {
-    if (leverPulled) return;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setLeverPulled(true);
-    window.setTimeout(() => setLeverPulled(false), reduced ? 1 : 620);
-    window.setTimeout(onChaos, reduced ? 0 : 520);
-  };
 
   return (
     <article className="case-card" id={caseStudy.id} data-motion-scope data-chaos-part>
@@ -1309,20 +1508,12 @@ function CaseCard({
               <div className="metric metric--danger">
                 <dt>{noDangling(labels.danger)}</dt>
                 <dd>
-                  <button
-                    className={`danger-button ${leverPulled ? 'danger-button--pulled' : ''}`}
-                    type="button"
-                    onClick={handleChaosButtonClick}
-                    ref={chaosButtonRef}
-                  >
-                    <span className="visually-hidden">{noDangling(labels.dangerButton)}</span>
-                    <span className="danger-button__body" aria-hidden="true">
-                      <img src={dangerButtonSrc} alt="" />
-                    </span>
-                    <span className="danger-button__lever" aria-hidden="true">
-                      <img src={dangerButtonSrc} alt="" />
-                    </span>
-                  </button>
+                  <SlotMachineLeverButton
+                    ariaLabel={labels.dangerButton}
+                    downSrc={`${A}${slotButtonAsset.down}`}
+                    onPull={onChaos}
+                    upSrc={`${A}${slotButtonAsset.up}`}
+                  />
                 </dd>
               </div>
             )}
