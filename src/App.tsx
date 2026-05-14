@@ -796,7 +796,14 @@ function App() {
               aria-hidden={!isLanguageMenuOpen}
             >
               {languageOptions.map((option) => (
-                <label className="language-option" key={option.code}>
+                <label
+                  className="language-option"
+                  key={option.code}
+                  onClick={() => {
+                    setLanguage(option.code);
+                    setLanguageMenuOpen(false);
+                  }}
+                >
                   <input
                     type="radio"
                     name="portfolio-language"
@@ -808,8 +815,8 @@ function App() {
                       setLanguageMenuOpen(false);
                     }}
                   />
-                  <span className="language-option__control" aria-hidden="true" />
                   <span>{option.label}</span>
+                  <span className="language-option__control" aria-hidden="true" />
                 </label>
               ))}
             </div>
