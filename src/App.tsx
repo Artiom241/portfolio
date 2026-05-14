@@ -365,10 +365,10 @@ const content: Record<Language, PortfolioContent> = {
       { label: 'Contacts', href: '#contacts' },
     ],
     interestMetrics: [
-      { label: 'Product Experience', value: '2.5+ years in\u00A0B2C\u00A0& SaaS' },
-      { label: 'Platforms', value: 'Web + Mobile' },
+      { label: 'Product Experience', value: '2.5+ years\nin\u00A0B2C\u00A0& SaaS' },
+      { label: 'Platforms', value: 'Web +\nMobile' },
       { label: 'Role', value: 'Product\u00A0designer\n(End-to-end)' },
-      { label: 'Focus', value: 'MVP, Growth' },
+      { label: 'Focus', value: 'MVP,\nGrowth' },
     ],
     skills: [
       {
