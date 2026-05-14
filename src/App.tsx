@@ -257,7 +257,11 @@ const cases: CaseStudy[] = [
       'Увеличен CR ключевого сценария (55% до 85%)',
       'Продукт масштабирован на 25 языков',
     ],
-    image: `${A}case-secret-santa.jpg`,
+    image: `${A}case-secret-santa-after.png`,
+    imageBefore: `${A}case-secret-santa-before.png`,
+    imageAfter: `${A}case-secret-santa-after.png`,
+    imageBeforeAlt: 'Secret Santa до редизайна: экраны создания игры',
+    imageAfterAlt: 'Secret Santa после редизайна: экраны приглашения участников и прогресса',
     imageAlt: 'Обложка кейса Secret Santa: мобильное приложение для обмена подарками',
   },
   {
@@ -278,9 +282,12 @@ const cases: CaseStudy[] = [
       'Простота интерфейса напрямую влияет на конверсию',
       'Пользователь не должен “думать”, чтобы купить',
     ],
-    image: `${A}case-tommy.jpg`,
+    image: `${A}case-tommy-after.png`,
+    imageBefore: `${A}case-tommy-before.png`,
+    imageAfter: `${A}case-tommy-after.png`,
+    imageBeforeAlt: 'Tommy Hilfiger до редизайна: главная страница интернет-магазина',
+    imageAfterAlt: 'Tommy Hilfiger после редизайна: обновленная главная страница интернет-магазина',
     imageAlt: 'Обложка кейса Tommy Hilfiger: редизайн e-commerce',
-    compactImage: true,
     hasChaosButton: true,
   },
 ];
@@ -472,7 +479,11 @@ const content: Record<Language, PortfolioContent> = {
         ],
         contributionsTitle: 'Achievements and contributions',
         resultsTitle: 'Results',
-        image: `${A}case-secret-santa.jpg`,
+        image: `${A}case-secret-santa-after.png`,
+        imageBefore: `${A}case-secret-santa-before.png`,
+        imageAfter: `${A}case-secret-santa-after.png`,
+        imageBeforeAlt: 'Secret Santa before redesign: game creation screens',
+        imageAfterAlt: 'Secret Santa after redesign: participant invitation and progress screens',
         imageAlt: 'Secret Santa case cover: mobile gift exchange app',
       },
       {
@@ -494,9 +505,12 @@ const content: Record<Language, PortfolioContent> = {
           'The user should not have to "think" to make a purchase.',
         ],
         contributionsTitle: 'Insights and growth',
-        image: `${A}case-tommy.jpg`,
+        image: `${A}case-tommy-after.png`,
+        imageBefore: `${A}case-tommy-before.png`,
+        imageAfter: `${A}case-tommy-after.png`,
+        imageBeforeAlt: 'Tommy Hilfiger before redesign: online store homepage',
+        imageAfterAlt: 'Tommy Hilfiger after redesign: updated online store homepage',
         imageAlt: 'Tommy Hilfiger case cover: e-commerce redesign',
-        compactImage: true,
         hasChaosButton: true,
       },
     ],
@@ -1373,7 +1387,6 @@ function BeforeAfterSlider({
   valueText: (beforeValue: number, afterValue: number) => string;
 }) {
   const [value, setValue] = useState(50);
-  const [direction, setDirection] = useState<'left' | 'right'>('right');
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const pendingClientXRef = useRef<number | null>(null);
@@ -1384,12 +1397,6 @@ function BeforeAfterSlider({
 
   const applyValue = useCallback((nextValue: number) => {
     const next = clamp(nextValue);
-    const previous = valueRef.current;
-
-    if (Math.abs(next - previous) > 0.1) {
-      setDirection(next < previous ? 'left' : 'right');
-    }
-
     valueRef.current = next;
     setValue(next);
   }, []);
@@ -1483,7 +1490,6 @@ function BeforeAfterSlider({
   return (
     <div
       className={`case-slider case-card--slider ${compact ? 'case-slider--compact' : ''}`}
-      data-direction={direction}
       onPointerDown={startDrag}
       ref={trackRef}
       style={sliderStyle}
