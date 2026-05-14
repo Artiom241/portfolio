@@ -914,6 +914,7 @@ function App() {
                 onChaos={triggerChaos}
                 chaosButtonRef={chaosButtonRef}
                 labels={copy.caseLabels}
+                dangerButtonAsset={language === 'en' ? 'special-button-en.svg' : 'special-button.svg'}
               />
             ))}
           </div>
@@ -1224,15 +1225,18 @@ function ChipList({ chips }: { chips: string[] }) {
 function CaseCard({
   caseStudy,
   chaosButtonRef,
+  dangerButtonAsset,
   labels,
   onChaos,
 }: {
   caseStudy: CaseStudy;
   chaosButtonRef: RefObject<HTMLButtonElement | null>;
+  dangerButtonAsset: string;
   labels: PortfolioContent['caseLabels'];
   onChaos: () => void;
 }) {
   const [leverPulled, setLeverPulled] = useState(false);
+  const dangerButtonSrc = `${A}${dangerButtonAsset}`;
 
   const handleChaosButtonClick = () => {
     if (leverPulled) return;
@@ -1277,10 +1281,10 @@ function CaseCard({
                   >
                     <span className="visually-hidden">{noDangling(labels.dangerButton)}</span>
                     <span className="danger-button__body" aria-hidden="true">
-                      <img src={`${A}special-button.svg`} alt="" />
+                      <img src={dangerButtonSrc} alt="" />
                     </span>
                     <span className="danger-button__lever" aria-hidden="true">
-                      <img src={`${A}special-button.svg`} alt="" />
+                      <img src={dangerButtonSrc} alt="" />
                     </span>
                   </button>
                 </dd>
