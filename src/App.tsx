@@ -115,7 +115,7 @@ type PortfolioContent = {
     results: string;
     slider: (title: string) => string;
     sliderHandle: string;
-    afterPercent: (value: number) => string;
+    sliderValueText: (beforeValue: number, afterValue: number) => string;
   };
   footer: {
     copyright: string;
@@ -334,7 +334,7 @@ const content: Record<Language, PortfolioContent> = {
       results: 'Результаты',
       slider: (title) => `Сравнение до и после: ${title}`,
       sliderHandle: 'Тяни',
-      afterPercent: (value) => `${value}% после`,
+      sliderValueText: (beforeValue, afterValue) => `Было ${beforeValue}%, стало ${afterValue}%`,
     },
     footer: {
       copyright: '© 2026',
@@ -543,7 +543,7 @@ const content: Record<Language, PortfolioContent> = {
       results: 'Results',
       slider: (title) => `Before and after comparison: ${title}`,
       sliderHandle: 'Drag',
-      afterPercent: (value) => `${value}% after`,
+      sliderValueText: (beforeValue, afterValue) => `Before ${beforeValue}%, after ${afterValue}%`,
     },
     footer: {
       copyright: '© 2026',
@@ -1328,12 +1328,12 @@ function CaseCard({
         <BeforeAfterSlider
           afterAlt={caseStudy.imageAfterAlt ?? `${caseStudy.imageAlt}: версия после`}
           afterSrc={caseStudy.imageAfter ?? caseStudy.image}
-          afterValueText={labels.afterPercent}
           beforeAlt={caseStudy.imageBeforeAlt ?? `${caseStudy.imageAlt}: версия до`}
           beforeSrc={caseStudy.imageBefore ?? caseStudy.image}
           compact={caseStudy.compactImage}
           handleLabel={labels.sliderHandle}
           label={labels.slider(caseStudy.title)}
+          valueText={labels.sliderValueText}
         />
       </div>
     </article>
@@ -1356,29 +1356,43 @@ function ImpactCard({ title, items }: { title: string; items: string[] }) {
 function BeforeAfterSlider({
   afterAlt,
   afterSrc,
-  afterValueText,
   beforeAlt,
   beforeSrc,
   compact,
   handleLabel,
   label,
+  valueText,
 }: {
   afterAlt: string;
   afterSrc: string;
-  afterValueText: (value: number) => string;
   beforeAlt: string;
   beforeSrc: string;
   compact?: boolean;
   handleLabel: string;
   label: string;
+  valueText: (beforeValue: number, afterValue: number) => string;
 }) {
   const [value, setValue] = useState(50);
+  const [direction, setDirection] = useState<'left' | 'right'>('right');
   const trackRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const pendingClientXRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
+  const valueRef = useRef(50);
 
   const clamp = (next: number) => Math.min(100, Math.max(0, next));
+
+  const applyValue = useCallback((nextValue: number) => {
+    const next = clamp(nextValue);
+    const previous = valueRef.current;
+
+    if (Math.abs(next - previous) > 0.1) {
+      setDirection(next < previous ? 'left' : 'right');
+    }
+
+    valueRef.current = next;
+    setValue(next);
+  }, []);
 
   const updateFromPending = useCallback(() => {
     rafRef.current = null;
@@ -1388,8 +1402,8 @@ function BeforeAfterSlider({
 
     const rect = track.getBoundingClientRect();
     const next = clamp(((clientX - rect.left) / rect.width) * 100);
-    setValue(next);
-  }, []);
+    applyValue(next);
+  }, [applyValue]);
 
   const queueUpdate = useCallback(
     (clientX: number) => {
@@ -1447,41 +1461,43 @@ function BeforeAfterSlider({
 
     if (event.key === 'Home') {
       event.preventDefault();
-      setValue(0);
+      applyValue(0);
       return;
     }
 
     if (event.key === 'End') {
       event.preventDefault();
-      setValue(100);
+      applyValue(100);
       return;
     }
 
     const step = keySteps[event.key];
     if (!step) return;
     event.preventDefault();
-    setValue((current) => clamp(current + step));
+    applyValue(valueRef.current + step);
   };
 
   const sliderStyle = { '--slider-value': `${value}%` } as CSSProperties;
+  const roundedValue = Math.round(value);
 
   return (
     <div
       className={`case-slider case-card--slider ${compact ? 'case-slider--compact' : ''}`}
+      data-direction={direction}
       onPointerDown={startDrag}
       ref={trackRef}
       style={sliderStyle}
     >
-      <img className="case-slider__image case-slider__image--before" src={beforeSrc} alt={beforeAlt} loading="lazy" />
+      <img className="case-slider__image case-slider__image--after" src={afterSrc} alt={afterAlt} loading="lazy" />
       <div className="case-slider__overlay" aria-hidden="true">
-        <img className="case-slider__image" src={afterSrc} alt="" loading="lazy" />
+        <img className="case-slider__image case-slider__image--before" src={beforeSrc} alt="" loading="lazy" />
       </div>
       <button
         aria-label={noDangling(label)}
         aria-valuemax={100}
         aria-valuemin={0}
-        aria-valuenow={Math.round(value)}
-        aria-valuetext={noDangling(afterValueText(Math.round(value)))}
+        aria-valuenow={roundedValue}
+        aria-valuetext={noDangling(valueText(roundedValue, 100 - roundedValue))}
         className="case-slider__handle"
         onKeyDown={handleKeyDown}
         role="slider"

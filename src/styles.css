@@ -5,6 +5,7 @@
   --muted: rgba(255, 255, 255, 0.72);
   --tertiary: rgba(255, 255, 255, 0.4);
   --divider: rgba(255, 255, 255, 0.16);
+  --secondary-black: #292929;
   --slider-handle-bg: #292929;
   --slider-handle-hover: #333;
   --card: rgba(255, 255, 255, 0.08);
@@ -855,15 +856,47 @@ ul {
   cursor: grabbing;
 }
 
-.case-slider::after {
+.case-slider::before {
   position: absolute;
   z-index: 1;
   top: 0;
   bottom: 0;
   left: var(--slider-value);
+  width: 24px;
+  content: "";
+  pointer-events: none;
+  opacity: 0.9;
+  mix-blend-mode: screen;
+  -webkit-backdrop-filter: blur(2px) saturate(145%);
+  backdrop-filter: blur(2px) saturate(145%);
+  transition:
+    left var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.case-slider[data-direction="right"]::before {
+  transform: translateX(0);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.32), rgba(108, 186, 255, 0.2) 42%, rgba(255, 74, 142, 0.16) 70%, transparent);
+  box-shadow: 8px 0 20px rgba(150, 210, 255, 0.18);
+}
+
+.case-slider[data-direction="left"]::before {
+  transform: translateX(-100%);
+  background:
+    linear-gradient(270deg, rgba(255, 255, 255, 0.32), rgba(108, 186, 255, 0.2) 42%, rgba(255, 74, 142, 0.16) 70%, transparent);
+  box-shadow: -8px 0 20px rgba(150, 210, 255, 0.18);
+}
+
+.case-slider::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: var(--slider-value);
   width: 1px;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--secondary-black);
   content: "";
   pointer-events: none;
   transition: left var(--duration-fast) var(--ease-out);
@@ -904,7 +937,7 @@ ul {
   background: transparent;
   cursor: grab;
   transition: left var(--duration-fast) var(--ease-out);
-  z-index: 2;
+  z-index: 3;
 }
 
 .case-slider__handle-label {
