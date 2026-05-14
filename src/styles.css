@@ -706,18 +706,18 @@ ul {
 }
 
 .case-card__meta {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: flex-start;
-  justify-content: space-between;
   gap: 24px;
 }
 
 .case-card__meta .metrics {
-  flex: 1 1 auto;
+  display: contents;
 }
 
 .metric--danger {
-  flex: 0 0 155px;
+  min-width: 0;
 }
 
 .slot-machine-button {
