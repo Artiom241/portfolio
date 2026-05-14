@@ -110,6 +110,7 @@ type PortfolioContent = {
     insights: string;
     results: string;
     slider: (title: string) => string;
+    sliderHandle: string;
     afterPercent: (value: number) => string;
   };
   footer: {
@@ -324,6 +325,7 @@ const content: Record<Language, PortfolioContent> = {
       insights: 'Выводы и рост',
       results: 'Результаты',
       slider: (title) => `Сравнение до и после: ${title}`,
+      sliderHandle: 'Тяни',
       afterPercent: (value) => `${value}% после`,
     },
     footer: {
@@ -528,6 +530,7 @@ const content: Record<Language, PortfolioContent> = {
       insights: 'Insights and growth',
       results: 'Results',
       slider: (title) => `Before and after comparison: ${title}`,
+      sliderHandle: 'Drag',
       afterPercent: (value) => `${value}% after`,
     },
     footer: {
@@ -1317,6 +1320,7 @@ function CaseCard({
           beforeAlt={`${caseStudy.imageAlt}: версия до`}
           beforeSrc={caseStudy.image}
           compact={caseStudy.compactImage}
+          handleLabel={labels.sliderHandle}
           label={labels.slider(caseStudy.title)}
         />
       </div>
@@ -1344,6 +1348,7 @@ function BeforeAfterSlider({
   beforeAlt,
   beforeSrc,
   compact,
+  handleLabel,
   label,
 }: {
   afterAlt: string;
@@ -1352,6 +1357,7 @@ function BeforeAfterSlider({
   beforeAlt: string;
   beforeSrc: string;
   compact?: boolean;
+  handleLabel: string;
   label: string;
 }) {
   const [value, setValue] = useState(50);
@@ -1469,6 +1475,9 @@ function BeforeAfterSlider({
         role="slider"
         type="button"
       >
+        <span className="case-slider__handle-label" aria-hidden="true">
+          {handleLabel}
+        </span>
         <span className="visually-hidden">{noDangling(label)}</span>
       </button>
     </div>

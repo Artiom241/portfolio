@@ -884,37 +884,42 @@ ul {
   position: absolute;
   top: 0;
   left: var(--slider-value);
-  width: 44px;
+  display: grid;
+  width: 56px;
   height: 100%;
+  place-items: center;
   transform: translateX(-50%);
   background: transparent;
   cursor: grab;
   transition: left var(--duration-fast) var(--ease-out);
 }
 
-.case-slider__handle::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 46px;
-  height: 46px;
-  transform: translate(-50%, -50%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.72);
-  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+.case-slider__handle-label {
+  display: inline-flex;
+  min-width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 8px;
+  border-radius: 9999px;
+  background: var(--divider);
+  color: var(--text);
+  font-family: "Helvetica Neue", var(--font-family);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
-.case-slider__handle::after {
-  content: "↔";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #fff;
-  font-size: 18px;
-  line-height: 1;
+.case-slider__handle:hover .case-slider__handle-label,
+.case-slider__handle:focus-visible .case-slider__handle-label {
+  background: rgba(255, 255, 255, 0.24);
+  transform: scale(1.03);
 }
 
 .footer {
