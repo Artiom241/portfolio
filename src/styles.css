@@ -855,6 +855,20 @@ ul {
   cursor: grabbing;
 }
 
+.case-slider::after {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  left: var(--slider-value);
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  content: "";
+  pointer-events: none;
+  transition: left var(--duration-fast) var(--ease-out);
+}
+
 .case-slider__image {
   width: 100%;
   height: 100%;
@@ -872,7 +886,6 @@ ul {
   inset: 0 auto 0 0;
   width: var(--slider-value);
   overflow: hidden;
-  border-right: 1px solid rgba(255, 255, 255, 0.9);
   transition: width var(--duration-fast) var(--ease-out);
 }
 
@@ -891,6 +904,7 @@ ul {
   height: 100%;
   place-items: center;
   transform: translateX(-50%);
+  padding: 0;
   background: transparent;
   cursor: grab;
   transition: left var(--duration-fast) var(--ease-out);
