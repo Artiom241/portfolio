@@ -9,6 +9,7 @@ import {
   type RefObject,
   type ReactNode,
 } from 'react';
+import { DisintegrationOrchestrator, type DisintegrationState } from './disintegration';
 
 const A = `${import.meta.env.BASE_URL}assets/`;
 
@@ -743,7 +744,7 @@ function useModalA11y<T extends HTMLElement>(
 
 function App() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [chaosActive, setChaosActive] = useState(false);
+  const [disintegrationState, setDisintegrationState] = useState<DisintegrationState>('idle');
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window === 'undefined') return 'ru';
     const savedLanguage = window.localStorage.getItem('portfolio-language');
@@ -752,6 +753,7 @@ function App() {
   const [isLanguageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [openSkillId, setOpenSkillId] = useState('logic');
   const modalRef = useRef<HTMLDivElement>(null);
+  const disintegrationRef = useRef<DisintegrationOrchestrator | null>(null);
   const languageControlRef = useRef<HTMLDivElement>(null);
   const resumeButtonRef = useRef<HTMLButtonElement>(null);
   const skillButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -765,6 +767,11 @@ function App() {
     document.documentElement.lang = language;
     window.localStorage.setItem('portfolio-language', language);
   }, [language]);
+
+  useEffect(() => () => {
+    disintegrationRef.current?.destroy();
+    disintegrationRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (!isLanguageMenuOpen) return undefined;
@@ -790,49 +797,49 @@ function App() {
 
   const closeModal = useCallback(() => {
     setActiveModal(null);
-    setChaosActive(false);
   }, []);
 
-  useModalA11y(Boolean(activeModal), modalRef, closeModal);
+  const rebuildChaos = useCallback(async () => {
+    setActiveModal(null);
 
-  const triggerChaos = () => {
-    if (chaosActive || activeModal) return;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const elements = Array.from(document.querySelectorAll<HTMLElement>('[data-chaos-part]'));
-
-    if (!reduced) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      elements.forEach((element, index) => {
-        const rect = element.getBoundingClientRect();
-        const seed = (index + 1) * 9301 + (element.textContent?.length ?? 1) * 49297;
-        const random = (step: number) => {
-          const value = Math.sin(seed + step * 233) * 10000;
-          return value - Math.floor(value);
-        };
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const angle = Math.atan2(centerY - height / 2, centerX - width / 2) + (random(1) - 0.5) * 0.9;
-        const distance = Math.min(Math.max(width * 0.26, 180), 620) + random(2) * 220;
-
-        element.style.setProperty('--chaos-x', `${Math.cos(angle) * distance + (random(3) - 0.5) * 120}px`);
-        element.style.setProperty('--chaos-y', `${Math.sin(angle) * distance + (random(4) - 0.5) * 160}px`);
-        element.style.setProperty('--chaos-r', `${(random(5) - 0.5) * 42}deg`);
-        element.style.setProperty('--chaos-scale', `${0.92 + random(6) * 0.14}`);
-        element.style.setProperty('--chaos-delay', `${index * 8 + random(7) * 80}ms`);
-      });
+    const orchestrator = disintegrationRef.current;
+    if (!orchestrator) {
+      setDisintegrationState('idle');
+      return;
     }
 
-    setChaosActive(true);
-    window.setTimeout(() => setActiveModal('chaos'), reduced ? 40 : 760);
+    await orchestrator.rebuild();
+    disintegrationRef.current = null;
+  }, []);
+
+  const closeActiveModal = useCallback(() => {
+    if (activeModal === 'chaos') {
+      void rebuildChaos();
+      return;
+    }
+
+    closeModal();
+  }, [activeModal, closeModal, rebuildChaos]);
+
+  useModalA11y(Boolean(activeModal), modalRef, closeActiveModal);
+
+  const triggerChaos = () => {
+    if (disintegrationState !== 'idle' || activeModal) return;
+
+    const sourceRoots = Array.from(document.querySelectorAll<HTMLElement>('.site-header, .portfolio__main, .footer'));
+    disintegrationRef.current?.destroy();
+    disintegrationRef.current = new DisintegrationOrchestrator({
+      sourceRoots,
+      onStateChange: setDisintegrationState,
+      onBroken: () => setActiveModal('chaos'),
+    });
+    disintegrationRef.current.disintegrate();
   };
 
   const openCasesFromChaos = () => {
-    closeModal();
-    window.setTimeout(() => {
+    void rebuildChaos().then(() => {
       document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 0);
+    });
   };
 
   const handleSkillKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -850,7 +857,7 @@ function App() {
   };
 
   return (
-    <div className={`portfolio ${chaosActive ? 'portfolio--chaos' : ''}`}>
+    <div className={`portfolio ${disintegrationState !== 'idle' ? 'portfolio--disintegrating' : ''}`}>
       <a className="skip-link" href="#main">
         {noDangling(copy.skipLink)}
       </a>
@@ -1025,7 +1032,7 @@ function App() {
       <Footer labels={copy.footer} />
 
       {activeModal === 'resume' && (
-        <ModalShell onClose={closeModal}>
+        <ModalShell onClose={closeActiveModal}>
           <div
             className="modal modal--choice"
             role="dialog"
@@ -1058,7 +1065,7 @@ function App() {
       )}
 
       {activeModal === 'chaos' && (
-        <ModalShell onClose={closeModal}>
+        <ModalShell onClose={closeActiveModal}>
           <div
             className="modal modal--choice"
             role="dialog"
@@ -1076,7 +1083,7 @@ function App() {
                 </p>
               </div>
               <div className="modal__actions">
-                <button className="modal__button" type="button" onClick={closeModal}>
+                <button className="modal__button" type="button" onClick={() => void rebuildChaos()}>
                   {noDangling(copy.modal.chaosReset)}
                 </button>
                 <button className="modal__button" type="button" onClick={openCasesFromChaos}>
@@ -1496,11 +1503,17 @@ function SlotMachineLeverButton({
     releasePull(true);
   };
 
+  const handleClick = () => {
+    if (phaseRef.current !== 'idle') return;
+    onPull();
+  };
+
   return (
     <button
       aria-label={noDangling(ariaLabel)}
       aria-pressed={phase !== 'idle'}
       className={`slot-machine-button slot-machine-button--${phase}`}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}
       onPointerCancel={cancelPull}

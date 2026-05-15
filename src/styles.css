@@ -47,6 +47,7 @@ body {
 }
 
 body.modal-lock,
+body.disintegration-lock,
 body.is-slider-dragging {
   overflow: hidden;
 }
@@ -1199,19 +1200,49 @@ ul {
   transform: translate3d(0, 0, 0) scale(1);
 }
 
-.portfolio--chaos {
+.portfolio--disintegrating {
   overflow: hidden;
 }
 
-.portfolio--chaos [data-chaos-part] {
+.disintegration-source-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.disintegration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  overflow: visible;
   pointer-events: none;
-  transform:
-    translate3d(var(--chaos-x, 0), var(--chaos-y, 0), 0)
-    rotate(var(--chaos-r, 0))
-    scale(var(--chaos-scale, 1));
-  transition: transform 900ms var(--ease-out);
-  transition-delay: var(--chaos-delay, 0ms);
+  contain: layout paint style;
+}
+
+.disintegration-piece {
+  position: fixed;
+  box-sizing: border-box;
+  margin: 0;
+  overflow: hidden;
+  transform-origin: center;
   will-change: transform;
+  backface-visibility: hidden;
+}
+
+.disintegration-piece--text {
+  display: block;
+  overflow: visible;
+  white-space: pre;
+}
+
+.disintegration-piece--media > * {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.disintegration-piece--line {
+  min-height: 1px;
 }
 
 @keyframes modalFade {
@@ -1595,7 +1626,7 @@ ul {
     transform: none;
   }
 
-  .portfolio--chaos [data-chaos-part] {
+  .disintegration-piece {
     transform: none;
   }
 }
