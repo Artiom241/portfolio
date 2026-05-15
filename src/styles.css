@@ -143,10 +143,27 @@ ul {
 }
 
 .site-header {
+  position: fixed;
+  z-index: 30;
+  top: 24px;
+  left: 50%;
   display: flex;
+  width: min(calc(100% - (var(--page-x) * 2)), calc(1440px - (var(--page-x) * 2)));
   align-items: center;
   justify-content: space-between;
   min-height: 24px;
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0);
+  transition:
+    opacity var(--duration-medium) var(--ease-out),
+    transform var(--duration-medium) var(--ease-out);
+  will-change: opacity, transform;
+}
+
+.site-header--hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-50%, -150%, 0);
 }
 
 .site-header__logo {

@@ -639,6 +639,60 @@ function useReveal() {
   }, []);
 }
 
+function useHeaderVisibility(forceVisible: boolean) {
+  const [isHidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    if (forceVisible) {
+      setHidden(false);
+      return undefined;
+    }
+
+    let lastScrollY = window.scrollY;
+    let revealTimer: number | null = null;
+
+    const clearRevealTimer = () => {
+      if (revealTimer === null) return;
+      window.clearTimeout(revealTimer);
+      revealTimer = null;
+    };
+
+    const scheduleReveal = () => {
+      clearRevealTimer();
+      revealTimer = window.setTimeout(() => {
+        setHidden(false);
+        revealTimer = null;
+      }, 1000);
+    };
+
+    const onScroll = () => {
+      const nextScrollY = window.scrollY;
+      const isScrollingDown = nextScrollY > lastScrollY + 2;
+
+      if (nextScrollY < 16) {
+        clearRevealTimer();
+        setHidden(false);
+      } else if (isScrollingDown) {
+        setHidden(true);
+        scheduleReveal();
+      } else {
+        scheduleReveal();
+      }
+
+      lastScrollY = Math.max(nextScrollY, 0);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      clearRevealTimer();
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [forceVisible]);
+
+  return isHidden;
+}
+
 function useModalA11y<T extends HTMLElement>(
   isOpen: boolean,
   dialogRef: RefObject<T | null>,
@@ -703,6 +757,7 @@ function App() {
   const skillButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const copy = content[language];
   const slotButtonAsset = slotButtonAssets[language];
+  const isHeaderHidden = useHeaderVisibility(isLanguageMenuOpen || Boolean(activeModal));
 
   useReveal();
 
@@ -800,7 +855,7 @@ function App() {
         {noDangling(copy.skipLink)}
       </a>
 
-      <header className="site-header" role="banner" data-chaos-part>
+      <header className={`site-header ${isHeaderHidden ? 'site-header--hidden' : ''}`} role="banner" data-chaos-part>
         <a className="site-header__logo" href="#top" aria-label="FRDM DSGNR — на главную">
           <img src={`${A}logo-header.svg`} alt="" width="113" height="24" />
         </a>
