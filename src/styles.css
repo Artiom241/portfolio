@@ -753,6 +753,8 @@ ul {
   background: transparent;
   color: inherit;
   cursor: pointer;
+  perspective: 820px;
+  perspective-origin: 147px 15px;
   transition: transform var(--duration-fast) var(--ease-out);
   touch-action: manipulation;
 }
@@ -766,62 +768,91 @@ ul {
 }
 
 .slot-machine-button__body {
-  z-index: 1;
+  z-index: 4;
   bottom: 0;
   left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 142px;
   height: 32px;
-  overflow: hidden;
   border-radius: 12px;
+  background: #e0322c;
 }
 
 .slot-machine-button__connector {
   z-index: 2;
-  left: 0;
-  bottom: 0;
-  width: 155px;
-  height: 78px;
-  overflow: hidden;
-  -webkit-mask: linear-gradient(#000 0 0) 132px 59px / 18px 6px no-repeat;
-  mask: linear-gradient(#000 0 0) 132px 59px / 18px 6px no-repeat;
+  left: 132.58px;
+  top: 13.61px;
+  width: 14.29px;
+  height: 4.36px;
+  border-radius: 1px;
+  background: #d9d9d9;
 }
 
 .slot-machine-button__lever-motion {
-  z-index: 3;
-  left: 0;
-  bottom: 0;
-  width: 155px;
-  height: 78px;
-  overflow: hidden;
-  transform-origin: 147px 62px;
-  transform: rotate(var(--lever-angle));
+  z-index: 1;
+  left: 139.24px;
+  top: -46px;
+  width: 15.76px;
+  height: 61.43px;
+  overflow: visible;
+  transform-origin: 50% 100%;
+  transform: rotateX(var(--lever-angle));
+  transform-style: preserve-3d;
   will-change: transform;
-  -webkit-mask:
-    radial-gradient(circle 8px at 147px 8px, #000 98%, transparent 100%),
-    linear-gradient(#000 0 0) 139px 8px / 15px 55px no-repeat;
-  mask:
-    radial-gradient(circle 8px at 147px 8px, #000 98%, transparent 100%),
-    linear-gradient(#000 0 0) 139px 8px / 15px 55px no-repeat;
 }
 
-.slot-machine-button__body img,
-.slot-machine-button__connector img,
-.slot-machine-button__lever-motion img {
+.slot-machine-button__label {
+  color: #fff;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.slot-machine-button__rod,
+.slot-machine-button__knob {
   position: absolute;
-  width: 155px;
-  height: 78px;
-  max-width: none;
+  display: block;
+  pointer-events: none;
 }
 
-.slot-machine-button__body img {
-  bottom: 0;
-  left: 0;
+.slot-machine-button__rod {
+  left: 5.63px;
+  top: 8.97px;
+  width: 4.36px;
+  height: 52.46px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #737373 0%, #d9d9d9 100%);
+  transform: translateZ(0.1px);
 }
 
-.slot-machine-button__connector img,
-.slot-machine-button__lever-motion img {
+.slot-machine-button__knob {
   top: 0;
   left: 0;
+  width: 15.76px;
+  height: 15.76px;
+  border-radius: 50%;
+  background: #d82924;
+  box-shadow:
+    inset 0 -0.9px 0.9px rgba(0, 0, 0, 0.25),
+    inset 0 0 0.9px rgba(255, 255, 255, 0.5);
+  transform: translateZ(0.2px);
+}
+
+.slot-machine-button__knob::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 2.7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.34);
+  filter: blur(0.85px);
 }
 
 .slot-machine-button__preload {
@@ -837,9 +868,9 @@ ul {
   transform: translateY(-2px);
 }
 
-.slot-machine-button:hover .slot-machine-button__lever-motion img,
-.slot-machine-button:focus-visible .slot-machine-button__lever-motion img,
-.slot-machine-button--pressing .slot-machine-button__lever-motion img {
+.slot-machine-button:hover .slot-machine-button__knob,
+.slot-machine-button:focus-visible .slot-machine-button__knob,
+.slot-machine-button--animating .slot-machine-button__knob {
   filter: drop-shadow(0 3px 5px rgba(224, 50, 44, 0.28)) brightness(1.04);
 }
 

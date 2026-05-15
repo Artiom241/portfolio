@@ -1330,7 +1330,7 @@ function ChipList({ chips }: { chips: string[] }) {
   );
 }
 
-type SlotLeverPhase = 'idle' | 'pressing' | 'releasing';
+type SlotLeverPhase = 'idle' | 'animating';
 
 const easeInCubic = (value: number) => value * value * value;
 const easeOutCubic = (value: number) => 1 - Math.pow(1 - value, 3);
@@ -1361,7 +1361,8 @@ function SlotMachineLeverButton({
   const phaseRef = useRef<SlotLeverPhase>('idle');
   const normalizedIntensity = clampMotionIntensity(intensity);
   const pullAngle = 180 * normalizedIntensity;
-  const overshootAngle = pullAngle + 8 * normalizedIntensity;
+  const overshootAngle = 188 * normalizedIntensity;
+  const reboundAngle = 172 * normalizedIntensity;
 
   const setPhase = useCallback((nextPhase: SlotLeverPhase) => {
     phaseRef.current = nextPhase;
@@ -1420,7 +1421,7 @@ function SlotMachineLeverButton({
 
   useEffect(() => () => cancelAnimation(), [cancelAnimation]);
 
-  const beginPull = useCallback(() => {
+  const triggerPull = useCallback(() => {
     if (phaseRef.current !== 'idle') return;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1428,110 +1429,49 @@ function SlotMachineLeverButton({
       return;
     }
 
-    setPhase('pressing');
-    animateLever([
-      { duration: 170, easing: easeInCubic, to: overshootAngle },
-      { duration: 90, easing: easeOutBack, to: pullAngle },
-    ]);
-  }, [animateLever, onPull, overshootAngle, pullAngle, setPhase]);
-
-  const releasePull = useCallback(
-    (shouldTrigger: boolean) => {
-      if (phaseRef.current !== 'pressing') return;
-
-      setPhase('releasing');
-      const needsDownFollowThrough = angleRef.current < pullAngle * 0.75;
-      const returnSegments = [
-        { duration: 280, easing: easeOutCubic, to: -5 * normalizedIntensity },
-        { duration: 120, easing: easeOutBack, to: 0 },
-      ];
-
-      animateLever(
-        needsDownFollowThrough
-          ? [
-              { duration: 120, easing: easeInCubic, to: overshootAngle },
-              { duration: 70, easing: easeOutBack, to: pullAngle },
-              ...returnSegments,
-            ]
-          : returnSegments,
-        () => {
-          setAngle(0);
-          setPhase('idle');
-          if (shouldTrigger) onPull();
-        },
-      );
-    },
-    [animateLever, normalizedIntensity, onPull, overshootAngle, pullAngle, setAngle, setPhase],
-  );
-
-  const cancelPull = useCallback(() => {
-    if (phaseRef.current !== 'pressing') return;
-
-    setPhase('releasing');
+    setPhase('animating');
     animateLever(
-      [{ duration: 180, easing: easeOutCubic, to: 0 }],
+      [
+        { duration: 180, easing: easeInCubic, to: overshootAngle },
+        { duration: 90, easing: easeOutBack, to: reboundAngle },
+        { duration: 260, easing: easeOutCubic, to: -5 * normalizedIntensity },
+        { duration: 110, easing: easeOutBack, to: 0 },
+      ],
       () => {
         setAngle(0);
         setPhase('idle');
+        onPull();
       },
     );
-  }, [animateLever, setAngle, setPhase]);
-
-  const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0 || phaseRef.current !== 'idle') return;
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    beginPull();
-  };
-
-  const handlePointerUp = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    releasePull(true);
-  };
-
-  const handleKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if ((event.key !== ' ' && event.key !== 'Enter') || event.repeat) return;
-    event.preventDefault();
-    beginPull();
-  };
-
-  const handleKeyUp = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
-    if (event.key !== ' ' && event.key !== 'Enter') return;
-    event.preventDefault();
-    releasePull(true);
-  };
-
-  const handleClick = () => {
-    if (phaseRef.current !== 'idle') return;
-    onPull();
-  };
+  }, [
+    animateLever,
+    normalizedIntensity,
+    onPull,
+    overshootAngle,
+    reboundAngle,
+    setAngle,
+    setPhase,
+  ]);
 
   return (
     <button
       aria-label={noDangling(ariaLabel)}
-      aria-pressed={phase !== 'idle'}
+      aria-pressed={phase === 'animating'}
       className={`slot-machine-button slot-machine-button--${phase}`}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
-      onKeyUp={handleKeyUp}
-      onPointerCancel={cancelPull}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
+      disabled={phase === 'animating'}
+      onClick={triggerPull}
       ref={buttonRef}
       style={{ '--lever-angle': '0deg' } as CSSProperties}
       type="button"
     >
       <span className="visually-hidden">{noDangling(ariaLabel)}</span>
       <span className="slot-machine-button__body" aria-hidden="true">
-        <img src={upSrc} alt="" />
+        <span className="slot-machine-button__label">{noDangling(ariaLabel)}</span>
       </span>
-      <span className="slot-machine-button__connector" aria-hidden="true">
-        <img src={upSrc} alt="" />
-      </span>
+      <span className="slot-machine-button__connector" aria-hidden="true" />
       <span className="slot-machine-button__lever-motion" aria-hidden="true">
-        <img src={upSrc} alt="" />
+        <span className="slot-machine-button__rod" />
+        <span className="slot-machine-button__knob" />
       </span>
       <img className="slot-machine-button__preload" src={downSrc} alt="" aria-hidden="true" />
     </button>
