@@ -706,9 +706,9 @@ ul {
 }
 
 .case-card__meta {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 24px;
 }
 
@@ -716,8 +716,13 @@ ul {
   display: contents;
 }
 
+.case-card__meta .metric {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .metric--danger {
-  min-width: 0;
+  width: 155px;
 }
 
 .slot-machine-button {
